@@ -14,17 +14,24 @@ import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequestBuilder
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
+import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.index.IndexRequestBuilder;
+import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.xcontent.XContent;
+import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import static org.elasticsearch.common.xcontent.XContentFactory.*;
 
 /**
  * Static utility singleton for working with Elasticsearch indices.
@@ -77,6 +84,17 @@ public class Indices {
       return true;
     }
 
+/*
+    IndexRequest request = new IndexRequest();
+
+    try {
+      IndexResponse respsone = self.client.getRestClient().index(request);
+
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+*/
+
     CreateIndexRequestBuilder builder = self.client.getClient().admin().indices().prepareCreate(indexName);
     builder.setSettings(Settings.builder()
         .put("number_of_shards", self.properties.getShardsPerIndex())
@@ -126,16 +144,9 @@ public class Indices {
       final Response response = restClient.performRequest("HEAD", "/" + indexName);
       return response.getStatusLine().getStatusCode() == HttpStatus.SC_OK;
     } catch (IOException e) {
+      log.error("Error checking for existing of {} index", indexName, e);
       return false;
     }
-
-/*    if (getInstance().client.getClient().admin().indices().prepareExists(indexName).get().isExists()) {
-
-      getInstance().indexCache.add(indexName);
-      return true;
-    }
-
-    return false; */
   }
 
   /**

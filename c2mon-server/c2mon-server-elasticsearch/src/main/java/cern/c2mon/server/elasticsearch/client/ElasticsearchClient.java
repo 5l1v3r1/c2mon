@@ -19,6 +19,8 @@ package cern.c2mon.server.elasticsearch.client;
 import java.io.IOException;
 
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
+import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.node.NodeValidationException;
 
 public interface ElasticsearchClient {
@@ -40,4 +42,8 @@ public interface ElasticsearchClient {
   org.elasticsearch.client.Client getClient();
 
   boolean isClusterYellow();
+
+  public RestClient getLowLevelRestClient();
+
+  public RestHighLevelClient getRestClient();
 }

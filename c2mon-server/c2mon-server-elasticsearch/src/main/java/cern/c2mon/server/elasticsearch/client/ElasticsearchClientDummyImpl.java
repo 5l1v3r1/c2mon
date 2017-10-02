@@ -20,6 +20,8 @@ import java.io.IOException;
 
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.node.NodeValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -67,6 +69,16 @@ public class ElasticsearchClientDummyImpl implements ElasticsearchClient {
 
   @Override
   public boolean isClusterYellow() {
+    throw new ElasticsearchClientNotAvailable();
+  }
+
+  @Override
+  public RestClient getLowLevelRestClient() {
+    throw new ElasticsearchClientNotAvailable();
+  }
+
+  @Override
+  public RestHighLevelClient getRestClient() {
     throw new ElasticsearchClientNotAvailable();
   }
 }
