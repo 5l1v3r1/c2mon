@@ -37,7 +37,6 @@ import org.elasticsearch.transport.Netty4Plugin;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -76,13 +75,13 @@ public class ElasticsearchClientImpl implements ElasticsearchClient {
   @Autowired
   public ElasticsearchClientImpl(ElasticsearchProperties properties) throws NodeValidationException {
     this.properties = properties;
-    //this.client = createClient();
+    this.client = createClient();
 
     if (properties.isEmbedded()) {
       startEmbeddedNode();
     }
 
-    //connectAsynchronously();
+    connectAsynchronously();
 
     this.restClient = this.createRestClient();
   }
@@ -116,14 +115,6 @@ public class ElasticsearchClientImpl implements ElasticsearchClient {
     ).build();
 
     RestHighLevelClient restHighLevelClient = new RestHighLevelClient(this.lowLevelRestClient);
-
-    try {
-      if (!restHighLevelClient.ping()) {
-       log.error("Error pinging to the Elasticsearch cluster at {}:{}", properties.getHost(), properties.getHttpPort());
-      }
-    } catch (IOException e) {
-      log.error("IOError connecting to the Elasticsearch cluster at {}:{}", properties.getHost(), properties.getHttpPort(), e);
-    }
 
     return restHighLevelClient;
   }
@@ -172,6 +163,7 @@ public class ElasticsearchClientImpl implements ElasticsearchClient {
       );
       nodeReady.get(120, TimeUnit.SECONDS);
     } catch (InterruptedException | ExecutionException | TimeoutException e) {
+      log.error("Exception when waiting for yellow status", e);
       throw new RuntimeException("Timeout when waiting for Elasticsearch yellow status!");
     }
   }
