@@ -16,18 +16,23 @@
  *****************************************************************************/
 package cern.c2mon.server.elasticsearch.tag;
 
-import cern.c2mon.pmanager.IDBPersistenceHandler;
-import cern.c2mon.pmanager.persistence.exception.IDBPersistenceException;
-import cern.c2mon.server.elasticsearch.Indices;
-import cern.c2mon.server.elasticsearch.MappingFactory;
-import cern.c2mon.server.elasticsearch.bulk.BulkProcessorProxy;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
-import java.util.List;
+import cern.c2mon.pmanager.IDBPersistenceHandler;
+import cern.c2mon.pmanager.persistence.exception.IDBPersistenceException;
+import cern.c2mon.server.elasticsearch.Indices;
+import cern.c2mon.server.elasticsearch.Mappings;
+import cern.c2mon.server.elasticsearch.Types;
+import cern.c2mon.server.elasticsearch.bulk.BulkProcessorProxy;
 
 /**
  * This class manages the fallback-aware indexing of {@link TagDocument}
@@ -43,17 +48,17 @@ public class TagDocumentIndexer implements IDBPersistenceHandler<TagDocument> {
   private final BulkProcessorProxy bulkProcessor;
 
   @Autowired
-  public TagDocumentIndexer(BulkProcessorProxy bulkProcessor) {
+  public TagDocumentIndexer(final BulkProcessorProxy bulkProcessor) {
     this.bulkProcessor = bulkProcessor;
   }
 
   @Override
-  public void storeData(TagDocument tag) throws IDBPersistenceException {
+  public void storeData(final TagDocument tag) throws IDBPersistenceException {
     storeData(Collections.singletonList(tag));
   }
 
   @Override
-  public void storeData(List<TagDocument> tags) throws IDBPersistenceException {
+  public void storeData(final List<TagDocument> tags) throws IDBPersistenceException {
     try {
       log.debug("Trying to send a batch of size {}", tags.size());
       tags.forEach(this::indexTag);
@@ -65,23 +70,34 @@ public class TagDocumentIndexer implements IDBPersistenceHandler<TagDocument> {
     }
   }
 
-  private void indexTag(TagDocument tag) {
+  private void indexTag(final TagDocument tag) {
     String index = getOrCreateIndex(tag);
+    String type = Types.of(tag.getProperty("c2mon", Map.class).get("dataType").toString());
 
-    log.trace("Indexing tag (#{}, index={}, type={})", tag.getId(), index, "tag");
+    log.trace("Indexing tag (#{}, index={}, type={})", tag.getId(), index, type);
 
-    IndexRequest indexNewTag = new IndexRequest(index, "tag")
-        .source(tag.toString())
+    IndexRequest indexNewTag = new IndexRequest(index, type)
+        .source(tag.toString(), XContentType.JSON)
         .routing(tag.getId());
 
     bulkProcessor.add(indexNewTag);
   }
 
-  private String getOrCreateIndex(TagDocument tag) {
+  private String getOrCreateIndex(final TagDocument tag) {
     String index = Indices.indexFor(tag);
 
     if (!Indices.exists(index)) {
-      Indices.create(index, "tag", MappingFactory.createTagMapping());
+      Indices.create(index);
+
+      // Create mappings for this index
+      Mappings.create(index, Boolean.class);
+      Mappings.create(index, Short.class);
+      Mappings.create(index, Integer.class);
+      Mappings.create(index, Float.class);
+      Mappings.create(index, Double.class);
+      Mappings.create(index, Long.class);
+      Mappings.create(index, String.class);
+      Mappings.create(index, Object.class);
     }
 
     return index;

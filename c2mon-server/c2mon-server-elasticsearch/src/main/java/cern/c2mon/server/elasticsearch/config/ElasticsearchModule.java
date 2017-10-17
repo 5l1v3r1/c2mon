@@ -21,6 +21,7 @@ import cern.c2mon.server.common.tag.Tag;
 import cern.c2mon.server.elasticsearch.bulk.BulkProcessorProxy;
 import cern.c2mon.server.elasticsearch.bulk.BulkProcessorProxyDummyImpl;
 import cern.c2mon.server.elasticsearch.bulk.BulkProcessorProxyImpl;
+import cern.c2mon.server.elasticsearch.bulk.BulkProcessorProxyRestImpl;
 import cern.c2mon.server.elasticsearch.client.ElasticsearchClient;
 import cern.c2mon.server.elasticsearch.client.ElasticsearchClientDummyImpl;
 import cern.c2mon.server.elasticsearch.client.ElasticsearchClientImpl;
@@ -61,7 +62,7 @@ public class ElasticsearchModule {
   @Bean
   BulkProcessorProxy getBulkProcessor(@Autowired ElasticsearchClient elasticsearchClient, @Autowired ElasticsearchProperties elasticsearchProperties) {
     if (elasticsearchProperties.isEnabled()) {
-      return new BulkProcessorProxyImpl(elasticsearchClient, elasticsearchProperties);
+      return new BulkProcessorProxyRestImpl(elasticsearchClient, elasticsearchProperties);
     } else {
       return new BulkProcessorProxyDummyImpl();
     }

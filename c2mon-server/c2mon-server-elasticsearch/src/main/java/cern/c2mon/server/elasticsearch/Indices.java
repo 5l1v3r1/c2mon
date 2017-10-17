@@ -8,21 +8,16 @@ import cern.c2mon.server.elasticsearch.tag.TagDocument;
 import cern.c2mon.server.elasticsearch.tag.config.TagConfigDocument;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
-import org.elasticsearch.ResourceAlreadyExistsException;
-import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequestBuilder;
-import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
-import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
-import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
-import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.action.index.IndexRequestBuilder;
-import org.elasticsearch.action.index.IndexResponse;
+import org.apache.http.entity.ContentType;
+import org.apache.http.nio.entity.NStringEntity;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.xcontent.XContent;
 import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.common.xcontent.XContentFactory;
+import org.elasticsearch.rest.RestStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -31,7 +26,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import static org.elasticsearch.common.xcontent.XContentFactory.*;
+
+import static java.util.Collections.emptyMap;
 
 /**
  * Static utility singleton for working with Elasticsearch indices.
@@ -84,44 +80,46 @@ public class Indices {
       return true;
     }
 
-/*
-    IndexRequest request = new IndexRequest();
+    log.debug("Creating new index with name {}", indexName);
 
     try {
-      IndexResponse respsone = self.client.getRestClient().index(request);
-
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-*/
-
-    CreateIndexRequestBuilder builder = self.client.getClient().admin().indices().prepareCreate(indexName);
-    builder.setSettings(Settings.builder()
+      Settings indexSettings = Settings.builder()
         .put("number_of_shards", self.properties.getShardsPerIndex())
         .put("number_of_replicas", self.properties.getReplicasPerShard())
-        .build());
+        .build();
 
-    if (mapping != null) {
-      builder.addMapping(type, mapping, XContentType.JSON);
+      XContentBuilder builder = XContentFactory.jsonBuilder()
+          .startObject()
+            .startObject("settings")
+              .value(indexSettings)
+            .endObject();
+
+      if (mapping != null) {
+        builder.startObject("mappings")
+            .field(type, "MAPPINGR3PLAC3M3")
+            //.startObject(type).value(mapping).endObject() does not work
+            .endObject();
+      }
+
+      String payload = builder.endObject().string();
+
+      if (mapping != null) {
+        payload = payload.replace("\"MAPPINGR3PLAC3M3\"", mapping);
+      }
+
+      HttpEntity entity = new NStringEntity(payload, ContentType.APPLICATION_JSON);
+      Response response = self.client.getLowLevelRestClient().performRequest("PUT", "/" + indexName, emptyMap(), entity);
+      if (response.getStatusLine().equals(RestStatus.OK)) {
+        self.indexCache.add(indexName);
+        return true;
+      } else {
+        return false;
+      }
+
+    } catch (IOException e) {
+      log.error("Could not create index {}", indexName, e);
+      return false;
     }
-
-    log.debug("Creating new index with name {}", indexName);
-    boolean created;
-
-    try {
-      CreateIndexResponse response = builder.get();
-      created = response.isAcknowledged();
-    } catch (ResourceAlreadyExistsException ex) {
-      created = true;
-    }
-
-    self.client.waitForYellowStatus();
-
-    if (created) {
-      self.indexCache.add(indexName);
-    }
-
-    return created;
   }
 
   /**

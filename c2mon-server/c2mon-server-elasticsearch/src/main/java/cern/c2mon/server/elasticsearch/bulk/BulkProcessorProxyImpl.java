@@ -42,8 +42,9 @@ public class BulkProcessorProxyImpl implements BulkProcessor.Listener, BulkProce
   }
 
   @Override
-  public void flush() {
+  public boolean flush() {
     bulkProcessor.flush();
+    return true;
   }
 
   @Override

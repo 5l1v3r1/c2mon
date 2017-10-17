@@ -16,10 +16,16 @@
  *****************************************************************************/
 package cern.c2mon.server.elasticsearch.alarm;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.HttpStatus;
+import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.rest.RestStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -65,12 +71,20 @@ public class AlarmDocumentIndexer implements IDBPersistenceHandler<AlarmDocument
   private boolean indexAlarm(AlarmDocument alarm) {
     String indexName = getOrCreateIndex(alarm);
 
-    log.debug("Indexing alarm #{} to index {}", alarm.getId(), indexName);
-    return client.getClient().prepareIndex().setIndex(indexName)
-        .setType("alarm")
-        .setSource(alarm.toString())
-        .setRouting(alarm.getId())
-        .get().status().equals(RestStatus.CREATED);
+    IndexRequest request = new IndexRequest(indexName);
+
+    request.source(alarm.toString(), XContentType.JSON);
+    request.type("alarm");
+    request.routing(alarm.getId());
+
+    RestHighLevelClient restClient = this.client.getRestClient();
+    try {
+      IndexResponse response = restClient.index(request);
+      return response.status().equals(RestStatus.CREATED);
+    } catch (IOException e) {
+      log.error("Could not index alarm #{} to index {}", alarm.getId(), indexName, e);
+      return false;
+    }
   }
 
   private String getOrCreateIndex(AlarmDocument alarm) {

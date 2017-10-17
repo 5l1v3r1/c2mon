@@ -16,10 +16,16 @@
  *****************************************************************************/
 package cern.c2mon.server.elasticsearch.supervision;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.HttpStatus;
+import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.rest.RestStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -66,15 +72,25 @@ public class SupervisionEventDocumentIndexer implements IDBPersistenceHandler<Su
     }
   }
 
-  private boolean indexSupervisionEvent(SupervisionEventDocument supervisionEvent) {
+  private boolean indexSupervisionEvent(final SupervisionEventDocument supervisionEvent) {
     String indexName = getOrCreateIndex(supervisionEvent);
 
     log.debug("Adding new supervision event to index {}", indexName);
-    return client.getClient().prepareIndex().setIndex(indexName)
-        .setType("supervision")
-        .setSource(supervisionEvent.toString())
-        .setRouting(supervisionEvent.getId())
-        .get().status().equals(RestStatus.CREATED);
+
+    IndexRequest request = new IndexRequest(indexName);
+
+    request.source(supervisionEvent.toString(), XContentType.JSON);
+    request.type("supervision");
+    request.routing(supervisionEvent.getId());
+
+    RestHighLevelClient restClient = this.client.getRestClient();
+    try {
+      IndexResponse response = restClient.index(request);
+      return response.status().equals(RestStatus.CREATED);
+    } catch (IOException e) {
+      log.error("Could not index supervision event #{} to index {}", supervisionEvent.getId(), indexName, e);
+      return false;
+    }
   }
 
   private String getOrCreateIndex(SupervisionEventDocument supervisionEvent) {

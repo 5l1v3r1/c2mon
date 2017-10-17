@@ -25,7 +25,7 @@ public class BulkProcessorProxyDummyImpl implements BulkProcessorProxy {
   }
 
   @Override
-  public void flush() {
-
+  public boolean flush() {
+    return false;
   }
 }
