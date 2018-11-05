@@ -194,6 +194,10 @@ public class ElasticsearchClientImpl implements ElasticsearchClient {
   //@TODO Embedded ES is no longer supported
   @Override
   public void startEmbeddedNode() throws NodeValidationException {
+
+    // possible solution: https://github.com/allegro/embedded-elasticsearch
+
+
     if (this.embeddedNode != null) {
       log.info("Embedded Elasticsearch cluster already running");
       return;
@@ -216,6 +220,7 @@ public class ElasticsearchClientImpl implements ElasticsearchClient {
      .build(), plugins);
 
       embeddedNode.start();
+
   }
 
   //solution from here: https://github.com/elastic/elasticsearch-hadoop/blob/fefcf8b191d287aca93a04144c67b803c6c81db5/mr/src/itest/java/org/elasticsearch/hadoop/EsEmbeddedServer.java
