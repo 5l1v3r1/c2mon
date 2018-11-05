@@ -18,7 +18,7 @@ package cern.c2mon.server.elasticsearch.alarm;
 
 import cern.c2mon.pmanager.persistence.exception.IDBPersistenceException;
 import cern.c2mon.server.common.alarm.AlarmCacheObject;
-import cern.c2mon.server.elasticsearch.Indices;
+import cern.c2mon.server.elasticsearch.IndicesRest;
 import cern.c2mon.server.elasticsearch.config.BaseElasticsearchIntegrationTest;
 import cern.c2mon.server.elasticsearch.util.EntityUtils;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
@@ -49,11 +49,11 @@ public class AlarmDocumentIndexerTests extends BaseElasticsearchIntegrationTest 
     indexer.storeData(document);
 
     // Refresh the index to make sure the document is searchable
-    String index = Indices.indexFor(document);
+    String index = IndicesRest.indexFor(document);
     client.getClient().admin().indices().prepareRefresh(index).execute().actionGet();
 
     // Make sure the index was created
-    assertTrue(Indices.exists(index));
+    assertTrue(IndicesRest.exists(index));
 
     // Make sure the alarm exists in the index
     SearchResponse response = client.getClient().prepareSearch(index).setTypes("alarm").execute().actionGet();

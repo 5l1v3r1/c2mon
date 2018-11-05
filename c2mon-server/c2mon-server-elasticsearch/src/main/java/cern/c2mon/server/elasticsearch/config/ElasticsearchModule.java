@@ -16,24 +16,21 @@
  *****************************************************************************/
 package cern.c2mon.server.elasticsearch.config;
 
-import cern.c2mon.server.common.listener.ConfigurationEventListener;
-import cern.c2mon.server.common.tag.Tag;
 import cern.c2mon.server.elasticsearch.bulk.BulkProcessorProxy;
 import cern.c2mon.server.elasticsearch.bulk.BulkProcessorProxyDummyImpl;
 import cern.c2mon.server.elasticsearch.bulk.BulkProcessorProxyImpl;
-import cern.c2mon.server.elasticsearch.bulk.BulkProcessorProxyRestImpl;
+import cern.c2mon.server.elasticsearch.bulk.rest.RestBulkProcessorProxy;
 import cern.c2mon.server.elasticsearch.client.ElasticsearchClient;
 import cern.c2mon.server.elasticsearch.client.ElasticsearchClientDummyImpl;
 import cern.c2mon.server.elasticsearch.client.ElasticsearchClientImpl;
-import cern.c2mon.server.elasticsearch.tag.config.TagConfigDocumentConverter;
-import cern.c2mon.server.elasticsearch.tag.config.TagConfigDocumentIndexer;
-import cern.c2mon.server.elasticsearch.tag.config.TagConfigDocumentListener;
-import cern.c2mon.shared.client.configuration.ConfigConstants;
+import cern.c2mon.server.elasticsearch.client.rest.RestElasticSearchClient;
 import org.elasticsearch.node.NodeValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 
 /**
  * This class is responsible for configuring the Spring context for the
@@ -53,7 +50,11 @@ public class ElasticsearchModule {
   @Bean
   ElasticsearchClient getElasticSearchClient(@Autowired ElasticsearchProperties elasticsearchProperties) throws NodeValidationException {
     if (elasticsearchProperties.isEnabled()) {
-      return new ElasticsearchClientImpl(elasticsearchProperties);
+      if (elasticsearchProperties.isRest()) {
+        return new RestElasticSearchClient(elasticsearchProperties);
+      } else {
+        return new ElasticsearchClientImpl(elasticsearchProperties);
+      }
     } else {
       return new ElasticsearchClientDummyImpl();
     }
@@ -62,9 +63,12 @@ public class ElasticsearchModule {
   @Bean
   BulkProcessorProxy getBulkProcessor(@Autowired ElasticsearchClient elasticsearchClient, @Autowired ElasticsearchProperties elasticsearchProperties) {
     if (elasticsearchProperties.isEnabled()) {
-      return new BulkProcessorProxyRestImpl(elasticsearchClient, elasticsearchProperties);
-    } else {
-      return new BulkProcessorProxyDummyImpl();
+      if (elasticsearchProperties.isRest()) {
+        return new RestBulkProcessorProxy((RestElasticSearchClient) elasticsearchClient, elasticsearchProperties);
+      } else {
+        return new BulkProcessorProxyImpl((ElasticsearchClientImpl) elasticsearchClient, elasticsearchProperties);
+      }
     }
+    return new BulkProcessorProxyDummyImpl();
   }
 }

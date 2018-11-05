@@ -18,17 +18,14 @@
 package cern.c2mon.server.elasticsearch.tag.config;
 
 import cern.c2mon.server.common.datatag.DataTagCacheObject;
-import cern.c2mon.server.elasticsearch.Indices;
+import cern.c2mon.server.elasticsearch.IndicesRest;
 import cern.c2mon.server.elasticsearch.config.BaseElasticsearchIntegrationTest;
 import cern.c2mon.server.elasticsearch.junit.CachePopulationRule;
 import cern.c2mon.server.elasticsearch.util.EntityUtils;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.Response;
-import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.junit.Rule;
 import org.junit.Test;
@@ -47,7 +44,7 @@ import static org.junit.Assert.assertTrue;
 public class TagConfigDocumentIndexerTests extends BaseElasticsearchIntegrationTest {
 
   @Autowired
-  private TagConfigDocumentIndexer indexer;
+  private TagConfigDocumentIndexerTransport indexer;
 
   @Autowired
   private TagConfigDocumentConverter converter;
@@ -62,10 +59,10 @@ public class TagConfigDocumentIndexerTests extends BaseElasticsearchIntegrationT
 
     TagConfigDocument document = converter.convert(tag)
             .orElseThrow(()->new Exception("Tag conversion failed"));
-    String index = Indices.indexFor(document);
+    String index = IndicesRest.indexFor(document);
 
     indexer.indexTagConfig(document);
-    assertTrue(Indices.exists(index));
+    assertTrue(IndicesRest.exists(index));
 
     // Refresh the index to make sure the document is searchable
     client.getClient().admin().indices().prepareRefresh(index).get();
@@ -86,11 +83,11 @@ public class TagConfigDocumentIndexerTests extends BaseElasticsearchIntegrationT
 
     TagConfigDocument document = converter.convert(tag)
             .orElseThrow(()->new Exception("Tag conversion failed"));
-    String index = Indices.indexFor(document);
+    String index = IndicesRest.indexFor(document);
 
       // Insert the document
       indexer.indexTagConfig(document);
-      assertTrue(Indices.exists(index));
+      assertTrue(IndicesRest.exists(index));
 
     // Refresh the index to make sure the document is searchable
 //    client.getClient().admin().indices().prepareRefresh(index).get();
@@ -141,11 +138,11 @@ public class TagConfigDocumentIndexerTests extends BaseElasticsearchIntegrationT
     TagConfigDocument document = converter.convert(tag)
             .orElseThrow(()->new Exception("Tag conversion failed"));
 
-      String index = Indices.indexFor(document);
+      String index = IndicesRest.indexFor(document);
 
       // Insert the document
       indexer.indexTagConfig(document);
-      assertTrue(Indices.exists(index));
+      assertTrue(IndicesRest.exists(index));
 
     // Refresh the index to make sure the document is searchable
     //client.getClient().admin().indices().prepareRefresh(index).get();

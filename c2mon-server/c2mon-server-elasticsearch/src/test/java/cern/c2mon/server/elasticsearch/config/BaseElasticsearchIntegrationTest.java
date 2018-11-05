@@ -20,14 +20,11 @@ import cern.c2mon.server.cache.config.CacheModule;
 import cern.c2mon.server.cache.dbaccess.config.CacheDbAccessModule;
 import cern.c2mon.server.cache.loading.config.CacheLoadingModule;
 import cern.c2mon.server.common.config.CommonModule;
-import cern.c2mon.server.elasticsearch.Indices;
+import cern.c2mon.server.elasticsearch.IndicesRest;
 import cern.c2mon.server.elasticsearch.MappingFactory;
 import cern.c2mon.server.elasticsearch.client.ElasticsearchClient;
 import cern.c2mon.server.elasticsearch.junit.CachePopulationRule;
 import cern.c2mon.server.supervision.config.SupervisionModule;
-import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
-import org.elasticsearch.action.delete.DeleteRequest;
-import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.Response;
 import org.junit.Before;
 import org.junit.runner.RunWith;
@@ -73,7 +70,7 @@ public abstract class BaseElasticsearchIntegrationTest {
         }
 
 //        client.getClient().admin().indices().delete(new DeleteIndexRequest(elasticsearchProperties.getTagConfigIndex()));
-        Indices.create(elasticsearchProperties.getTagConfigIndex(), "tag_config", MappingFactory.createTagConfigMapping());
+        IndicesRest.create(elasticsearchProperties.getTagConfigIndex(), "tag_config", MappingFactory.createTagConfigMapping());
 
       });
       nodeReady.get(120, TimeUnit.SECONDS);

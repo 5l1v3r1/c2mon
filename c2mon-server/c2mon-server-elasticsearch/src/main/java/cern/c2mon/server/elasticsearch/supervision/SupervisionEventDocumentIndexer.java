@@ -16,25 +16,24 @@
  *****************************************************************************/
 package cern.c2mon.server.elasticsearch.supervision;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-
+import cern.c2mon.pmanager.IDBPersistenceHandler;
+import cern.c2mon.pmanager.persistence.exception.IDBPersistenceException;
+import cern.c2mon.server.elasticsearch.IndicesRest;
+import cern.c2mon.server.elasticsearch.MappingFactory;
+import cern.c2mon.server.elasticsearch.client.ElasticsearchClient;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.HttpStatus;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.client.Client;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.rest.RestStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import cern.c2mon.pmanager.IDBPersistenceHandler;
-import cern.c2mon.pmanager.persistence.exception.IDBPersistenceException;
-import cern.c2mon.server.elasticsearch.Indices;
-import cern.c2mon.server.elasticsearch.MappingFactory;
-import cern.c2mon.server.elasticsearch.client.ElasticsearchClient;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * This class manages the fallback-aware indexing of {@link SupervisionEventDocument}
@@ -51,7 +50,7 @@ public class SupervisionEventDocumentIndexer implements IDBPersistenceHandler<Su
 
   @Autowired
   public SupervisionEventDocumentIndexer(final ElasticsearchClient client) {
-    this.client = client;;
+    this.client = client;
   }
 
   @Override
@@ -77,27 +76,33 @@ public class SupervisionEventDocumentIndexer implements IDBPersistenceHandler<Su
 
     log.debug("Adding new supervision event to index {}", indexName);
 
-    IndexRequest request = new IndexRequest(indexName);
+    if (client.getProperties().isRest()) {
+      IndexRequest request = new IndexRequest(indexName);
+      request.source(supervisionEvent.toString(), XContentType.JSON);
+      request.type("supervision");
+      request.routing(supervisionEvent.getId());
 
-    request.source(supervisionEvent.toString(), XContentType.JSON);
-    request.type("supervision");
-    request.routing(supervisionEvent.getId());
-
-    RestHighLevelClient restClient = this.client.getRestClient();
-    try {
-      IndexResponse response = restClient.index(request);
-      return response.status().equals(RestStatus.CREATED);
-    } catch (IOException e) {
-      log.error("Could not index supervision event #{} to index {}", supervisionEvent.getId(), indexName, e);
-      return false;
+      try {
+        IndexResponse response = ((RestHighLevelClient) client.getClient()).index(request);
+        return response.status().equals(RestStatus.CREATED);
+      } catch (IOException e) {
+        log.error("Could not index supervision event #{} to index {}", supervisionEvent.getId(), indexName, e);
+        return false;
+      }
+    } else {
+      return ((Client) client.getClient()).prepareIndex().setIndex(indexName)
+              .setType("supervision")
+              .setSource(supervisionEvent.toString())
+              .setRouting(supervisionEvent.getId())
+              .get().status().equals(RestStatus.CREATED);
     }
   }
 
   private String getOrCreateIndex(SupervisionEventDocument supervisionEvent) {
-    String index = Indices.indexFor(supervisionEvent);
+    String index = IndicesRest.indexFor(supervisionEvent);
 
-    if (!Indices.exists(index)) {
-      Indices.create(index, "supervision", MappingFactory.createSupervisionMapping());
+    if (!IndicesRest.exists(index)) {
+      IndicesRest.create(index, "supervision", MappingFactory.createSupervisionMapping());
     }
 
     return index;

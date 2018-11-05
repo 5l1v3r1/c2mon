@@ -1,5 +1,6 @@
 package cern.c2mon.server.elasticsearch.bulk;
 
+import cern.c2mon.server.elasticsearch.client.ElasticsearchClientImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.bulk.BulkRequest;
@@ -26,7 +27,7 @@ public class BulkProcessorProxyImpl implements BulkProcessor.Listener, BulkProce
   private final BulkProcessor bulkProcessor;
 
   @Autowired
-  public BulkProcessorProxyImpl(final ElasticsearchClient client, final ElasticsearchProperties properties) {
+  public BulkProcessorProxyImpl(final ElasticsearchClientImpl client, final ElasticsearchProperties properties) {
     this.bulkProcessor = BulkProcessor.builder(client.getClient(), this)
           .setBulkActions(properties.getBulkActions())
           .setBulkSize(new ByteSizeValue(properties.getBulkSize(), ByteSizeUnit.MB))

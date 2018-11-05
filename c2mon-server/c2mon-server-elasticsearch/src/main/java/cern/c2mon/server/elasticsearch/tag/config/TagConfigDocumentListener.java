@@ -42,14 +42,14 @@ public class TagConfigDocumentListener implements ConfigurationEventListener {
 
   private final ElasticsearchClient elasticsearchClient;
 
-  private final TagConfigDocumentIndexer indexer;
+  private final TagConfigDocumentIndexerTransport indexer;
 
   private final TagConfigDocumentConverter converter;
 
   private final TagFacadeGateway tagFacadeGateway;
 
   @Autowired
-  public TagConfigDocumentListener(final ElasticsearchClient elasticsearchClient, final TagConfigDocumentIndexer indexer, final TagConfigDocumentConverter converter, final TagFacadeGateway tagFacadeGateway) {
+  public TagConfigDocumentListener(final ElasticsearchClient elasticsearchClient, final TagConfigDocumentIndexerTransport indexer, final TagConfigDocumentConverter converter, final TagFacadeGateway tagFacadeGateway) {
     this.elasticsearchClient = elasticsearchClient;
     this.indexer = indexer;
     this.converter = converter;

@@ -13,34 +13,34 @@ public class IndicesTests extends BaseElasticsearchIntegrationTest {
 
   @Test
   public void monthlyIndex() {
-    Indices.getProperties().setIndexType("M");
+    IndicesRest.getProperties().setIndexType("M");
 
     TagDocument document = new TagDocument();
     document.put("timestamp", 1448928000000L);
 
-    String index = Indices.indexFor(document);
+    String index = IndicesRest.indexFor(document);
     assertEquals("c2mon-tag_2015-12", index);
   }
 
   @Test
   public void weeklyIndex() {
-    Indices.getProperties().setIndexType("W");
+    IndicesRest.getProperties().setIndexType("W");
 
     TagDocument document = new TagDocument();
     document.put("timestamp", 1448928000000L);
 
-    String index = Indices.indexFor(document);
+    String index = IndicesRest.indexFor(document);
     assertEquals("c2mon-tag_2015-W49", index);
   }
 
   @Test
   public void dailyIndex() {
-    Indices.getProperties().setIndexType("D");
+    IndicesRest.getProperties().setIndexType("D");
 
     TagDocument document = new TagDocument();
     document.put("timestamp", 1448928000000L);
 
-    String index = Indices.indexFor(document);
+    String index = IndicesRest.indexFor(document);
     assertEquals("c2mon-tag_2015-12-01", index);
   }
 }

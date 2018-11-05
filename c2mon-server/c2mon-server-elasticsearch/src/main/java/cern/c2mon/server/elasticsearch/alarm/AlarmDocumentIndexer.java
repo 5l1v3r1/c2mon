@@ -21,9 +21,9 @@ import java.util.Collections;
 import java.util.List;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.HttpStatus;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.client.Client;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.rest.RestStatus;
@@ -32,7 +32,7 @@ import org.springframework.stereotype.Component;
 
 import cern.c2mon.pmanager.IDBPersistenceHandler;
 import cern.c2mon.pmanager.persistence.exception.IDBPersistenceException;
-import cern.c2mon.server.elasticsearch.Indices;
+import cern.c2mon.server.elasticsearch.IndicesRest;
 import cern.c2mon.server.elasticsearch.MappingFactory;
 import cern.c2mon.server.elasticsearch.client.ElasticsearchClient;
 
@@ -71,27 +71,36 @@ public class AlarmDocumentIndexer implements IDBPersistenceHandler<AlarmDocument
   private boolean indexAlarm(AlarmDocument alarm) {
     String indexName = getOrCreateIndex(alarm);
 
-    IndexRequest request = new IndexRequest(indexName);
+    log.debug("Indexing alarm #{} to index {}", alarm.getId(), indexName);
 
-    request.source(alarm.toString(), XContentType.JSON);
-    request.type("alarm");
-    request.routing(alarm.getId());
+    if (client.getProperties().isRest()) {
+      return ((Client)client.getClient()).prepareIndex().setIndex(indexName)
+              .setType("alarm")
+              .setSource(alarm.toString())
+              .setRouting(alarm.getId())
+              .get().status().equals(RestStatus.CREATED);
+    } else {
+      IndexRequest request = new IndexRequest(indexName);
 
-    RestHighLevelClient restClient = this.client.getRestClient();
-    try {
-      IndexResponse response = restClient.index(request);
-      return response.status().equals(RestStatus.CREATED);
-    } catch (IOException e) {
-      log.error("Could not index alarm #{} to index {}", alarm.getId(), indexName, e);
-      return false;
+      request.source(alarm.toString(), XContentType.JSON);
+      request.type("alarm");
+      request.routing(alarm.getId());
+
+      try {
+        IndexResponse response = ((RestHighLevelClient) client.getClient()).index(request);
+        return response.status().equals(RestStatus.CREATED);
+      } catch (IOException e) {
+        log.error("Could not index alarm #{} to index {}", alarm.getId(), indexName, e);
+        return false;
+      }
     }
   }
 
   private String getOrCreateIndex(AlarmDocument alarm) {
-    String index = Indices.indexFor(alarm);
+    String index = IndicesRest.indexFor(alarm);
 
-    if (!Indices.exists(index)) {
-      Indices.create(index, "alarm", MappingFactory.createAlarmMapping());
+    if (!IndicesRest.exists(index)) {
+      IndicesRest.create(index, "alarm", MappingFactory.createAlarmMapping());
     }
 
     return index;

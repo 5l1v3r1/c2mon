@@ -18,20 +18,16 @@ package cern.c2mon.server.elasticsearch.tag;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
+import cern.c2mon.server.elasticsearch.MappingFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.common.xcontent.XContentType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import cern.c2mon.pmanager.IDBPersistenceHandler;
 import cern.c2mon.pmanager.persistence.exception.IDBPersistenceException;
-import cern.c2mon.server.elasticsearch.Indices;
-import cern.c2mon.server.elasticsearch.Mappings;
-import cern.c2mon.server.elasticsearch.Types;
+import cern.c2mon.server.elasticsearch.IndicesRest;
 import cern.c2mon.server.elasticsearch.bulk.BulkProcessorProxy;
 
 /**
@@ -48,17 +44,17 @@ public class TagDocumentIndexer implements IDBPersistenceHandler<TagDocument> {
   private final BulkProcessorProxy bulkProcessor;
 
   @Autowired
-  public TagDocumentIndexer(final BulkProcessorProxy bulkProcessor) {
+  public TagDocumentIndexer(BulkProcessorProxy bulkProcessor) {
     this.bulkProcessor = bulkProcessor;
   }
 
   @Override
-  public void storeData(final TagDocument tag) throws IDBPersistenceException {
+  public void storeData(TagDocument tag) throws IDBPersistenceException {
     storeData(Collections.singletonList(tag));
   }
 
   @Override
-  public void storeData(final List<TagDocument> tags) throws IDBPersistenceException {
+  public void storeData(List<TagDocument> tags) throws IDBPersistenceException {
     try {
       log.debug("Trying to send a batch of size {}", tags.size());
       tags.forEach(this::indexTag);
@@ -70,34 +66,23 @@ public class TagDocumentIndexer implements IDBPersistenceHandler<TagDocument> {
     }
   }
 
-  private void indexTag(final TagDocument tag) {
+  private void indexTag(TagDocument tag) {
     String index = getOrCreateIndex(tag);
-    String type = Types.of(tag.getProperty("c2mon", Map.class).get("dataType").toString());
 
-    log.trace("Indexing tag (#{}, index={}, type={})", tag.getId(), index, type);
+    log.trace("Indexing tag (#{}, index={}, type={})", tag.getId(), index, "tag");
 
-    IndexRequest indexNewTag = new IndexRequest(index, type)
-        .source(tag.toString(), XContentType.JSON)
-        .routing(tag.getId());
+    IndexRequest indexNewTag = new IndexRequest(index, "tag")
+            .source(tag.toString())
+            .routing(tag.getId());
 
     bulkProcessor.add(indexNewTag);
   }
 
-  private String getOrCreateIndex(final TagDocument tag) {
-    String index = Indices.indexFor(tag);
+  private String getOrCreateIndex(TagDocument tag) {
+    String index = IndicesRest.indexFor(tag);
 
-    if (!Indices.exists(index)) {
-      Indices.create(index);
-
-      // Create mappings for this index
-      Mappings.create(index, Boolean.class);
-      Mappings.create(index, Short.class);
-      Mappings.create(index, Integer.class);
-      Mappings.create(index, Float.class);
-      Mappings.create(index, Double.class);
-      Mappings.create(index, Long.class);
-      Mappings.create(index, String.class);
-      Mappings.create(index, Object.class);
+    if (!IndicesRest.exists(index)) {
+      IndicesRest.create(index, "tag", MappingFactory.createTagMapping());
     }
 
     return index;
@@ -107,4 +92,5 @@ public class TagDocumentIndexer implements IDBPersistenceHandler<TagDocument> {
   public String getDBInfo() {
     return "elasticsearch/tag";
   }
+
 }
