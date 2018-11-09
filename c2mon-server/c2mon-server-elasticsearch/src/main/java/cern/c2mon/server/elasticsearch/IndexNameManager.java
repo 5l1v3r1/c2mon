@@ -6,24 +6,22 @@ import cern.c2mon.server.elasticsearch.supervision.SupervisionEventDocument;
 import cern.c2mon.server.elasticsearch.tag.TagDocument;
 import cern.c2mon.server.elasticsearch.tag.config.TagConfigDocument;
 import lombok.Getter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public abstract class Indices {
+@Component
+public class IndexNameManager {
 
     @Getter
-    protected ElasticsearchProperties properties;
+    private ElasticsearchProperties properties;
 
-    protected Indices(ElasticsearchProperties properties) {
+    @Autowired
+    public IndexNameManager(ElasticsearchProperties properties) {
         this.properties = properties;
     }
-
-    public abstract boolean create(String indexName);
-    public abstract boolean create(String indexName, String type, String mapping);
-    public abstract boolean exists(String indexName);
-    public abstract boolean delete(String indexName);
-
 
     /**
      * Generate an index for the given {@link TagDocument} based on its

@@ -16,25 +16,17 @@
  *****************************************************************************/
 package cern.c2mon.server.elasticsearch.alarm;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-
+import cern.c2mon.pmanager.IDBPersistenceHandler;
+import cern.c2mon.pmanager.persistence.exception.IDBPersistenceException;
+import cern.c2mon.server.elasticsearch.IndexManager;
+import cern.c2mon.server.elasticsearch.IndexNameManager;
+import cern.c2mon.server.elasticsearch.MappingFactory;
 import lombok.extern.slf4j.Slf4j;
-import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.action.index.IndexResponse;
-import org.elasticsearch.client.Client;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.common.xcontent.XContentType;
-import org.elasticsearch.rest.RestStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import cern.c2mon.pmanager.IDBPersistenceHandler;
-import cern.c2mon.pmanager.persistence.exception.IDBPersistenceException;
-import cern.c2mon.server.elasticsearch.IndicesRest;
-import cern.c2mon.server.elasticsearch.MappingFactory;
-import cern.c2mon.server.elasticsearch.client.ElasticsearchClient;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * This class manages the fallback-aware indexing of {@link AlarmDocument}
@@ -48,7 +40,10 @@ import cern.c2mon.server.elasticsearch.client.ElasticsearchClient;
 public class AlarmDocumentIndexer implements IDBPersistenceHandler<AlarmDocument> {
 
   @Autowired
-  private ElasticsearchClient client;
+  private IndexNameManager indexNameManager;
+
+  @Autowired
+  private IndexManager indexManager;
 
   @Override
   public void storeData(AlarmDocument alarm) throws IDBPersistenceException {
@@ -73,37 +68,18 @@ public class AlarmDocumentIndexer implements IDBPersistenceHandler<AlarmDocument
 
     log.debug("Indexing alarm #{} to index {}", alarm.getId(), indexName);
 
-    if (client.getProperties().isRest()) {
-      return ((Client)client.getClient()).prepareIndex().setIndex(indexName)
-              .setType("alarm")
-              .setSource(alarm.toString())
-              .setRouting(alarm.getId())
-              .get().status().equals(RestStatus.CREATED);
-    } else {
-      IndexRequest request = new IndexRequest(indexName);
-
-      request.source(alarm.toString(), XContentType.JSON);
-      request.type("alarm");
-      request.routing(alarm.getId());
-
-      try {
-        IndexResponse response = ((RestHighLevelClient) client.getClient()).index(request);
-        return response.status().equals(RestStatus.CREATED);
-      } catch (IOException e) {
-        log.error("Could not index alarm #{} to index {}", alarm.getId(), indexName, e);
-        return false;
-      }
-    }
+    return indexManager.index(indexName, "alarm", alarm.toString(), alarm.getId());
   }
 
   private String getOrCreateIndex(AlarmDocument alarm) {
-    String index = IndicesRest.indexFor(alarm);
+    String index = indexNameManager.indexFor(alarm);
 
-    if (!IndicesRest.exists(index)) {
-      IndicesRest.create(index, "alarm", MappingFactory.createAlarmMapping());
+    if (!indexManager.exists(index)) {
+      indexManager.create(index, "alarm", MappingFactory.createAlarmMapping());
     }
 
     return index;
+
   }
 
   @Override

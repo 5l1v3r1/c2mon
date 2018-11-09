@@ -1,14 +1,10 @@
-package cern.c2mon.server.elasticsearch.client.rest;
+package cern.c2mon.server.elasticsearch.client;
 
-import cern.c2mon.server.elasticsearch.client.ElasticsearchClient;
 import cern.c2mon.server.elasticsearch.config.ElasticsearchProperties;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpHost;
-import org.elasticsearch.client.Response;
-import org.elasticsearch.client.ResponseListener;
-import org.elasticsearch.client.RestClient;
-import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.client.*;
 import org.elasticsearch.cluster.health.ClusterHealthStatus;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.XContentHelper;
@@ -16,8 +12,8 @@ import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.node.NodeValidationException;
 import org.elasticsearch.threadpool.ThreadPool;
 import org.springframework.beans.factory.annotation.Autowired;
-import pl.allegro.tech.embeddedelasticsearch.EmbeddedElastic;
-import pl.allegro.tech.embeddedelasticsearch.PopularProperties;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,38 +23,33 @@ import java.util.Optional;
 
 
 @Slf4j
-public class RestElasticSearchClient implements ElasticsearchClient<RestHighLevelClient, ClusterHealthStatus> {
+@Component
+@ConditionalOnProperty(name = "c2mon.server.elasticsearch.rest", havingValue="true")
+public class ElasticsearchClientRest implements ElasticsearchClient<RestHighLevelClient> {
     @Getter
     private ElasticsearchProperties properties;
-    @Getter
-    private RestClient restClient;
-    @Getter
+
     private RestHighLevelClient restHighLevelClient;
+
     @Getter
     private ThreadPool threadPool;
 
-    private EmbeddedElastic embeddedNode;
-
     @Autowired
-    public RestElasticSearchClient(ElasticsearchProperties properties) throws NodeValidationException {
+    public ElasticsearchClientRest(ElasticsearchProperties properties) throws NodeValidationException {
         this.properties = properties;
 
-        if (properties.isEmbedded()) {
-            startEmbeddedNode();
-        }
-
-        restClient = RestClient.builder(new HttpHost(properties.getHost(), properties.getHttpPort(), "http"))
+        RestClientBuilder restClientBuilder =
+                RestClient.builder(new HttpHost(properties.getHost(), properties.getHttpPort(), "http"))
                 .setRequestConfigCallback(
                         requestConfigBuilder -> requestConfigBuilder
                                 .setConnectTimeout(10000)
                                 .setSocketTimeout(120000))
-                .setMaxRetryTimeoutMillis(60000)
-                .build();
+                .setMaxRetryTimeoutMillis(60000);
 
-        restHighLevelClient = new RestHighLevelClient(restClient);
+        restHighLevelClient = new RestHighLevelClient(restClientBuilder);
 
         try {
-            if (!restHighLevelClient.ping()) {
+            if (!restHighLevelClient.ping(RequestOptions.DEFAULT)) {
                 log.error("Error pinging to the Elasticsearch cluster at {}:{}", properties.getHost(), properties.getHttpPort());
             }
         } catch (IOException e) {
@@ -92,8 +83,7 @@ public class RestElasticSearchClient implements ElasticsearchClient<RestHighLeve
         });
     }
 
-    @Override
-    public ClusterHealthStatus getClusterHealth() {
+    private ClusterHealthStatus getClusterHealth() {
         Map<String, String> parameters = new HashMap() {{
             put("wait_for_status", "yellow");
         }};
@@ -120,30 +110,6 @@ public class RestElasticSearchClient implements ElasticsearchClient<RestHighLeve
     }
 
     @Override
-    public synchronized void startEmbeddedNode() throws NodeValidationException {
-
-        if (this.embeddedNode != null) {
-            log.info("Embedded Elasticsearch cluster already running");
-            return;
-        }
-
-        log.info("Launching an embedded Elasticsearch cluster: {}", properties.getClusterName());
-
-        //TODO: find a dynamic way of defining ES version
-        embeddedNode = EmbeddedElastic.builder()
-                .withElasticVersion("5.6.0")
-                .withSetting(PopularProperties.TRANSPORT_TCP_PORT, properties.getHttpPort())
-                .withSetting(PopularProperties.CLUSTER_NAME, properties.getClusterName())
-                .build();
-
-        try {
-            embeddedNode.start();
-        } catch (InterruptedException | IOException e) {
-            log.error("An error occurred launching an embedded Elasticsearch cluster.", e);
-        }
-    }
-
-    @Override
     public void close() {
         if (restClient != null) {
             try {
@@ -156,14 +122,6 @@ public class RestElasticSearchClient implements ElasticsearchClient<RestHighLeve
                 restClient = null;
                 restHighLevelClient = null;
             }
-        }
-    }
-
-    @Override
-    public void closeEmbeddedNode() throws IOException {
-        if (embeddedNode != null) {
-            embeddedNode.stop();
-            embeddedNode= null;
         }
     }
 

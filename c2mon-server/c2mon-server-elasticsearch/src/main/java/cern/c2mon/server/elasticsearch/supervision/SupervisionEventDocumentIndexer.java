@@ -18,7 +18,8 @@ package cern.c2mon.server.elasticsearch.supervision;
 
 import cern.c2mon.pmanager.IDBPersistenceHandler;
 import cern.c2mon.pmanager.persistence.exception.IDBPersistenceException;
-import cern.c2mon.server.elasticsearch.IndicesRest;
+import cern.c2mon.server.elasticsearch.IndexManager;
+import cern.c2mon.server.elasticsearch.IndexNameManager;
 import cern.c2mon.server.elasticsearch.MappingFactory;
 import cern.c2mon.server.elasticsearch.client.ElasticsearchClient;
 import lombok.extern.slf4j.Slf4j;
@@ -46,12 +47,11 @@ import java.util.List;
 @Component
 public class SupervisionEventDocumentIndexer implements IDBPersistenceHandler<SupervisionEventDocument> {
 
-  private ElasticsearchClient client;
+  @Autowired
+  private IndexNameManager indexNameManager;
 
   @Autowired
-  public SupervisionEventDocumentIndexer(final ElasticsearchClient client) {
-    this.client = client;
-  }
+  private IndexManager indexManager;
 
   @Override
   public void storeData(SupervisionEventDocument supervisionEvent) throws IDBPersistenceException {
@@ -76,33 +76,14 @@ public class SupervisionEventDocumentIndexer implements IDBPersistenceHandler<Su
 
     log.debug("Adding new supervision event to index {}", indexName);
 
-    if (client.getProperties().isRest()) {
-      IndexRequest request = new IndexRequest(indexName);
-      request.source(supervisionEvent.toString(), XContentType.JSON);
-      request.type("supervision");
-      request.routing(supervisionEvent.getId());
-
-      try {
-        IndexResponse response = ((RestHighLevelClient) client.getClient()).index(request);
-        return response.status().equals(RestStatus.CREATED);
-      } catch (IOException e) {
-        log.error("Could not index supervision event #{} to index {}", supervisionEvent.getId(), indexName, e);
-        return false;
-      }
-    } else {
-      return ((Client) client.getClient()).prepareIndex().setIndex(indexName)
-              .setType("supervision")
-              .setSource(supervisionEvent.toString())
-              .setRouting(supervisionEvent.getId())
-              .get().status().equals(RestStatus.CREATED);
-    }
+    return indexManager.index(indexName, "supervision", supervisionEvent.toString(), supervisionEvent.getId());
   }
 
   private String getOrCreateIndex(SupervisionEventDocument supervisionEvent) {
-    String index = IndicesRest.indexFor(supervisionEvent);
+    String index = indexNameManager.indexFor(supervisionEvent);
 
-    if (!IndicesRest.exists(index)) {
-      IndicesRest.create(index, "supervision", MappingFactory.createSupervisionMapping());
+    if (!indexManager.exists(index)) {
+      indexManager.create(index, "supervision", MappingFactory.createSupervisionMapping());
     }
 
     return index;

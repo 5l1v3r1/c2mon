@@ -1,26 +1,30 @@
-package cern.c2mon.server.elasticsearch.bulk.rest;
+package cern.c2mon.server.elasticsearch.bulk;
 
-import cern.c2mon.server.elasticsearch.bulk.BulkProcessorProxy;
-import cern.c2mon.server.elasticsearch.client.rest.RestElasticSearchClient;
+import cern.c2mon.server.elasticsearch.client.ElasticsearchClientRest;
 import cern.c2mon.server.elasticsearch.config.ElasticsearchProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.common.inject.Singleton;
 import org.elasticsearch.common.unit.ByteSizeUnit;
 import org.elasticsearch.common.unit.ByteSizeValue;
 import org.elasticsearch.common.unit.TimeValue;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 @Slf4j
-public class RestBulkProcessorProxy implements BulkProcessorProxy, BulkProcessor.Listener {
+@Component
+@ConditionalOnProperty(name = "c2mon.server.elasticsearch.rest", havingValue="true")
+public class BulkProcessorProxyRest implements BulkProcessorProxy, BulkProcessor.Listener {
 
     private BulkProcessor bulkProcessor;
 
     @Autowired
-    public RestBulkProcessorProxy(final RestElasticSearchClient client, final ElasticsearchProperties properties) {
+    public BulkProcessorProxyRest(final ElasticsearchClientRest client, final ElasticsearchProperties properties) {
         bulkProcessor = new BulkProcessor.Builder(client.getClient()::bulkAsync, this, client.getThreadPool())
                 .setBulkActions(properties.getBulkActions())
                 .setBulkSize(new ByteSizeValue(properties.getBulkSize(), ByteSizeUnit.MB))

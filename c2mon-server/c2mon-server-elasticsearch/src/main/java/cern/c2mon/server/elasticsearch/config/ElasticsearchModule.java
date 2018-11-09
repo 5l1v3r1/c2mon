@@ -16,18 +16,7 @@
  *****************************************************************************/
 package cern.c2mon.server.elasticsearch.config;
 
-import cern.c2mon.server.elasticsearch.bulk.BulkProcessorProxy;
-import cern.c2mon.server.elasticsearch.bulk.BulkProcessorProxyDummyImpl;
-import cern.c2mon.server.elasticsearch.bulk.BulkProcessorProxyImpl;
-import cern.c2mon.server.elasticsearch.bulk.rest.RestBulkProcessorProxy;
-import cern.c2mon.server.elasticsearch.client.ElasticsearchClient;
-import cern.c2mon.server.elasticsearch.client.ElasticsearchClientDummyImpl;
-import cern.c2mon.server.elasticsearch.client.ElasticsearchClientImpl;
-import cern.c2mon.server.elasticsearch.client.rest.RestElasticSearchClient;
-import org.elasticsearch.node.NodeValidationException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -40,35 +29,9 @@ import org.springframework.context.annotation.Import;
  * @author Alban Marguet
  */
 @Configuration
-@Import({
-    ElasticsearchPersistenceConfig.class
-})
+@Import(ElasticsearchPersistenceConfig.class)
 @EnableConfigurationProperties(ElasticsearchProperties.class)
 @ComponentScan("cern.c2mon.server.elasticsearch")
 public class ElasticsearchModule {
-
-  @Bean
-  ElasticsearchClient getElasticSearchClient(@Autowired ElasticsearchProperties elasticsearchProperties) throws NodeValidationException {
-    if (elasticsearchProperties.isEnabled()) {
-      if (elasticsearchProperties.isRest()) {
-        return new RestElasticSearchClient(elasticsearchProperties);
-      } else {
-        return new ElasticsearchClientImpl(elasticsearchProperties);
-      }
-    } else {
-      return new ElasticsearchClientDummyImpl();
-    }
-  }
-
-  @Bean
-  BulkProcessorProxy getBulkProcessor(@Autowired ElasticsearchClient elasticsearchClient, @Autowired ElasticsearchProperties elasticsearchProperties) {
-    if (elasticsearchProperties.isEnabled()) {
-      if (elasticsearchProperties.isRest()) {
-        return new RestBulkProcessorProxy((RestElasticSearchClient) elasticsearchClient, elasticsearchProperties);
-      } else {
-        return new BulkProcessorProxyImpl((ElasticsearchClientImpl) elasticsearchClient, elasticsearchProperties);
-      }
-    }
-    return new BulkProcessorProxyDummyImpl();
-  }
+    // Module definition.
 }

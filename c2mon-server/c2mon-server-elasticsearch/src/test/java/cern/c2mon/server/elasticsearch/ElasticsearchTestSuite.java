@@ -2,7 +2,6 @@ package cern.c2mon.server.elasticsearch;
 
 import cern.c2mon.server.elasticsearch.alarm.AlarmDocumentConverterTests;
 import cern.c2mon.server.elasticsearch.alarm.AlarmDocumentIndexerTests;
-import cern.c2mon.server.elasticsearch.client.ElasticsearchClientTests;
 import cern.c2mon.server.elasticsearch.config.ElasticsearchProperties;
 import cern.c2mon.server.elasticsearch.supervision.SupervisionEventDocumentIndexerTests;
 import cern.c2mon.server.elasticsearch.supervision.SupervisionEventDocumentTests;
@@ -19,10 +18,9 @@ import org.springframework.util.FileSystemUtils;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
     ElasticsearchModuleIntegrationTest.class,
-    IndicesTests.class,
+    IndexNameManagerTests.class,
     AlarmDocumentConverterTests.class,
     AlarmDocumentIndexerTests.class,
-    ElasticsearchClientTests.class,
     SupervisionEventDocumentIndexerTests.class,
     SupervisionEventDocumentTests.class,
     TagDocumentConverterTests.class,

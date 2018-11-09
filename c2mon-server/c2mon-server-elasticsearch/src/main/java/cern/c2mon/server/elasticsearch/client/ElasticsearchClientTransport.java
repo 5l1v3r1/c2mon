@@ -24,20 +24,19 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.cluster.health.ClusterHealthStatus;
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.elasticsearch.common.transport.TransportAddress;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.node.InternalSettingsPreparer;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeValidationException;
 import org.elasticsearch.plugins.Plugin;
-import org.elasticsearch.transport.Netty4Plugin;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -53,7 +52,9 @@ import java.util.concurrent.TimeoutException;
  * @author James Hamilton
  */
 @Slf4j
-public class ElasticsearchClientImpl implements ElasticsearchClient<Client, ClusterHealthResponse> {
+@Component
+@ConditionalOnProperty(name = "c2mon.server.elasticsearch.rest", havingValue="false")
+public class ElasticsearchClientTransport implements ElasticsearchClient<Client> {
 
   @Getter
   private ElasticsearchProperties properties;
@@ -61,17 +62,10 @@ public class ElasticsearchClientImpl implements ElasticsearchClient<Client, Clus
   @Getter
   private Client client;
 
-  //static because we should only ever start 1 embedded node
-  private static Node embeddedNode = null;
-
   @Autowired
-  public ElasticsearchClientImpl(ElasticsearchProperties properties) throws NodeValidationException {
+  public ElasticsearchClientTransport(ElasticsearchProperties properties) throws NodeValidationException {
     this.properties = properties;
     this.client = createClient();
-
-    if (properties.isEmbedded()) {
-      startEmbeddedNode();
-    }
 
     connectAsynchronously();
   }
@@ -90,7 +84,7 @@ public class ElasticsearchClientImpl implements ElasticsearchClient<Client, Clus
 
     TransportClient client = new PreBuiltTransportClient(settingsBuilder.build());
     try {
-      client.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(properties.getHost()), properties.getPort()));
+      client.addTransportAddress(new TransportAddress(InetAddress.getByName(properties.getHost()), properties.getPort()));
     } catch (UnknownHostException e) {
       log.error("Error connecting to the Elasticsearch cluster at {}:{}", properties.getHost(), properties.getPort(), e);
       return null;
@@ -146,8 +140,7 @@ public class ElasticsearchClientImpl implements ElasticsearchClient<Client, Clus
     }
   }
 
-  @Override
-  public ClusterHealthResponse getClusterHealth() {
+  private ClusterHealthResponse getClusterHealth() {
     return client.admin().cluster().prepareHealth()
         .setWaitForYellowStatus()
         .setTimeout(TimeValue.timeValueMillis(100))
@@ -157,40 +150,6 @@ public class ElasticsearchClientImpl implements ElasticsearchClient<Client, Clus
   public boolean isClusterYellow() {
     ClusterHealthStatus status = getClusterHealth().getStatus();
     return status.equals(ClusterHealthStatus.YELLOW) || status.equals(ClusterHealthStatus.GREEN);
-  }
-
-  //@TODO "using Node directly within an application is not officially supported"
-  //https://www.elastic.co/guide/en/elasticsearch/reference/5.5/breaking_50_java_api_changes.html
-  //@TODO Embedded ES is no longer supported
-  @Override
-  public void startEmbeddedNode() throws NodeValidationException {
-
-    // possible solution: https://github.com/allegro/embedded-elasticsearch
-
-
-    if (this.embeddedNode != null) {
-      log.info("Embedded Elasticsearch cluster already running");
-      return;
-    }
-    log.info("Launching an embedded Elasticsearch cluster: {}", properties.getClusterName());
-
-    Collection<Class<? extends Plugin>> plugins = Arrays.asList(Netty4Plugin.class);
-    embeddedNode = new PluginConfigurableNode(Settings.builder()
-     .put("path.home", properties.getEmbeddedStoragePath())
-     .put("cluster.name", properties.getClusterName())
-     .put("node.name", properties.getNodeName())
-     .put("transport.type", "netty4")
-     .put("node.data", true)
-     .put("node.master", true)
-     .put("network.host", "0.0.0.0")
-     .put("http.type", "netty4")
-     .put("http.enabled", true)
-     .put("http.cors.enabled", true)
-     .put("http.cors.allow-origin", "/.*/")
-     .build(), plugins);
-
-      embeddedNode.start();
-
   }
 
   //solution from here: https://github.com/elastic/elasticsearch-hadoop/blob/fefcf8b191d287aca93a04144c67b803c6c81db5/mr/src/itest/java/org/elasticsearch/hadoop/EsEmbeddedServer.java
@@ -206,14 +165,6 @@ public class ElasticsearchClientImpl implements ElasticsearchClient<Client, Clus
       client.close();
       log.info("Closed client {}", client.settings().get("node.name"));
       client = null;
-    }
-  }
-
-  @Override
-  public void closeEmbeddedNode() throws IOException {
-    if(embeddedNode != null) {
-      embeddedNode.close();
-      this.close();
     }
   }
 }

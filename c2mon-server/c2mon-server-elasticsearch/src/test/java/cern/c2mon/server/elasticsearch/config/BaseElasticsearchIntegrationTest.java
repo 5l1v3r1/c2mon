@@ -20,23 +20,33 @@ import cern.c2mon.server.cache.config.CacheModule;
 import cern.c2mon.server.cache.dbaccess.config.CacheDbAccessModule;
 import cern.c2mon.server.cache.loading.config.CacheLoadingModule;
 import cern.c2mon.server.common.config.CommonModule;
-import cern.c2mon.server.elasticsearch.IndicesRest;
-import cern.c2mon.server.elasticsearch.MappingFactory;
+import cern.c2mon.server.elasticsearch.IndexManager;
 import cern.c2mon.server.elasticsearch.client.ElasticsearchClient;
 import cern.c2mon.server.elasticsearch.junit.CachePopulationRule;
 import cern.c2mon.server.supervision.config.SupervisionModule;
-import org.elasticsearch.client.Response;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpHead;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import pl.allegro.tech.embeddedelasticsearch.EmbeddedElastic;
+import pl.allegro.tech.embeddedelasticsearch.PopularProperties;
 
 import java.io.IOException;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+
+import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
@@ -50,32 +60,44 @@ import java.util.concurrent.TimeoutException;
 })
 public abstract class BaseElasticsearchIntegrationTest {
 
-  //the embedded ES node will start
-  //when the client is instantiatied (magically by Spring)
-  //we don't shutdown the embedded server at the end of each
-  //test because it may be used by other tests.
-  @Autowired
-  protected ElasticsearchClient client;
+  private static ElasticsearchProperties properties = new ElasticsearchProperties();
+  private static EmbeddedElastic embeddedNode;
 
-  @Before
-  public void waitForElasticSearch() throws InterruptedException, ExecutionException {
-    try {
-      CompletableFuture<Void> nodeReady = CompletableFuture.runAsync(() -> {
-        //client.waitForYellowStatus();
-        ElasticsearchProperties elasticsearchProperties = this.client.getProperties();
-        try {
-          Response response = this.client.getLowLevelRestClient().performRequest("DELETE", "/" + elasticsearchProperties.getTagConfigIndex());
-        } catch (IOException e) {
-          e.printStackTrace();
-        }
+  protected String indexName;
 
-//        client.getClient().admin().indices().delete(new DeleteIndexRequest(elasticsearchProperties.getTagConfigIndex()));
-        IndicesRest.create(elasticsearchProperties.getTagConfigIndex(), "tag_config", MappingFactory.createTagConfigMapping());
+  @BeforeClass
+  public static void setUpClass() throws Exception {
+    if (embeddedNode == null) {
+      embeddedNode = EmbeddedElastic.builder()
+              .withElasticVersion("5.6.0")
+              .withSetting(PopularProperties.TRANSPORT_TCP_PORT, properties.getPort())
+              .withSetting(PopularProperties.HTTP_PORT, properties.getHttpPort())
+              .withSetting(PopularProperties.CLUSTER_NAME, properties.getClusterName())
+              .withStartTimeout(1, TimeUnit.MINUTES)
+              .build();
 
-      });
-      nodeReady.get(120, TimeUnit.SECONDS);
-    } catch (TimeoutException e) {
-      throw new RuntimeException("Timeout when waiting for embedded elasticsearch!");
+      embeddedNode.start();
     }
+  }
+
+  @After
+  public void tearDown() {
+    getEmbeddedNode().deleteIndex(indexName);
+    getEmbeddedNode().refreshIndices();
+  }
+
+  protected EmbeddedElastic getEmbeddedNode() {
+    return embeddedNode;
+  }
+
+  protected boolean doesIndexExist(String indexName) throws IOException {
+    HttpHead httpRequest = new HttpHead(("http://" + properties.getHost() + ":" + properties.getHttpPort() + "/" + indexName));
+    HttpClient httpClient = HttpClientBuilder.create().build();
+    HttpResponse httpResponse = httpClient.execute(httpRequest);
+    return httpResponse.getStatusLine().getStatusCode() == HttpStatus.SC_OK;
+  }
+
+  protected static ElasticsearchProperties getProperties() {
+    return properties;
   }
 }

@@ -17,14 +17,18 @@
 package cern.c2mon.server.elasticsearch.supervision;
 
 import cern.c2mon.pmanager.persistence.exception.IDBPersistenceException;
-import cern.c2mon.server.elasticsearch.IndicesRest;
+import cern.c2mon.server.elasticsearch.IndexNameManager;
 import cern.c2mon.server.elasticsearch.config.BaseElasticsearchIntegrationTest;
 import cern.c2mon.server.elasticsearch.util.EntityUtils;
 import cern.c2mon.shared.client.supervision.SupervisionEvent;
-import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
-import org.elasticsearch.action.search.SearchResponse;
+import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.io.IOException;
+import java.net.UnknownHostException;
+import java.util.List;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
@@ -36,28 +40,42 @@ import static junit.framework.TestCase.assertTrue;
 public class SupervisionEventDocumentIndexerTests extends BaseElasticsearchIntegrationTest {
 
   @Autowired
+  private IndexNameManager indexNameManager;
+
+  @Autowired
   private SupervisionEventDocumentIndexer indexer;
 
-  @Test
-  public void logSupervisionEvent() throws IDBPersistenceException {
-    SupervisionEvent event = EntityUtils.createSupervisionEvent();
+  private SupervisionEventDocument document;
 
-    SupervisionEventDocument document = new SupervisionEventDocumentConverter().convert(event);
+  @Before
+  public void setUp() {
+    SupervisionEvent event = EntityUtils.createSupervisionEvent();
+    document = new SupervisionEventDocumentConverter().convert(event);
+    indexName = indexNameManager.indexFor(document);
+  }
+
+  @Test
+  public void logSingleSupervisionEventTest() throws IDBPersistenceException, IOException {
     indexer.storeData(document);
 
-    // Refresh the index to make sure the document is searchable
-    String index = IndicesRest.indexFor(document);
-    client.getClient().admin().indices().prepareRefresh(index).execute().actionGet();
+    getEmbeddedNode().refreshIndices();
 
-    // Make sure the index was created
-    assertTrue(IndicesRest.exists(index));
+    assertTrue("Index should have been created.", doesIndexExist(indexName));
 
-    // Make sure the alarm exists in the index
-    SearchResponse response = client.getClient().prepareSearch(index).setTypes("supervision").execute().actionGet();
-    assertEquals(response.getHits().totalHits(), 1);
+    List<String> indexData = getEmbeddedNode().fetchAllDocuments(indexName);
+    Assert.assertEquals("Index should have one document inserted.", 1, indexData.size());
+  }
 
-    // Clean up
-    DeleteIndexResponse deleteResponse = client.getClient().admin().indices().prepareDelete(index).execute().actionGet();
-    assertTrue(deleteResponse.isAcknowledged());
+  @Test
+  public void logMultipleSupervisionEventsTest() throws IDBPersistenceException, IOException {
+    indexer.storeData(document);
+    indexer.storeData(document);
+
+    getEmbeddedNode().refreshIndices();
+
+    assertTrue("Index should have been created.", doesIndexExist(indexName));
+
+    List<String> indexData = getEmbeddedNode().fetchAllDocuments(indexName);
+    Assert.assertEquals("Index should have two documents inserted.", 2, indexData.size());
   }
 }

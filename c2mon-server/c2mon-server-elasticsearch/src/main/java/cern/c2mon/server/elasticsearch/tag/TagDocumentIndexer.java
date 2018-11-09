@@ -19,6 +19,8 @@ package cern.c2mon.server.elasticsearch.tag;
 import java.util.Collections;
 import java.util.List;
 
+import cern.c2mon.server.elasticsearch.IndexManager;
+import cern.c2mon.server.elasticsearch.IndexNameManager;
 import cern.c2mon.server.elasticsearch.MappingFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.index.IndexRequest;
@@ -27,7 +29,6 @@ import org.springframework.stereotype.Component;
 
 import cern.c2mon.pmanager.IDBPersistenceHandler;
 import cern.c2mon.pmanager.persistence.exception.IDBPersistenceException;
-import cern.c2mon.server.elasticsearch.IndicesRest;
 import cern.c2mon.server.elasticsearch.bulk.BulkProcessorProxy;
 
 /**
@@ -41,10 +42,14 @@ import cern.c2mon.server.elasticsearch.bulk.BulkProcessorProxy;
 @Component
 public class TagDocumentIndexer implements IDBPersistenceHandler<TagDocument> {
 
+  private final IndexNameManager indexNameManager;
+  private final IndexManager indexManager;
   private final BulkProcessorProxy bulkProcessor;
 
   @Autowired
-  public TagDocumentIndexer(BulkProcessorProxy bulkProcessor) {
+  public TagDocumentIndexer(IndexNameManager indexNameManager, IndexManager indexManager, BulkProcessorProxy bulkProcessor) {
+    this.indexNameManager = indexNameManager;
+    this.indexManager = indexManager;
     this.bulkProcessor = bulkProcessor;
   }
 
@@ -79,13 +84,14 @@ public class TagDocumentIndexer implements IDBPersistenceHandler<TagDocument> {
   }
 
   private String getOrCreateIndex(TagDocument tag) {
-    String index = IndicesRest.indexFor(tag);
+    String index = indexNameManager.indexFor(tag);
 
-    if (!IndicesRest.exists(index)) {
-      IndicesRest.create(index, "tag", MappingFactory.createTagMapping());
+    if (!indexManager.exists(index)) {
+      indexManager.create(index, "tag", MappingFactory.createTagMapping());
     }
 
     return index;
+
   }
 
   @Override

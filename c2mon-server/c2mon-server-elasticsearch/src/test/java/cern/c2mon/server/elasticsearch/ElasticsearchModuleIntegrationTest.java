@@ -21,6 +21,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Alban Marguet
@@ -30,10 +33,8 @@ public class ElasticsearchModuleIntegrationTest extends BaseElasticsearchIntegra
 
   @Test
   public void testModuleStartup() throws IOException {
-    String[] indices = client.getClient().admin().indices().prepareGetIndex().get().indices();
-    log.info("indices in the cluster: ");
-    for (String index : indices) {
-      log.info(index);
-    }
+    List<String> indexData = getEmbeddedNode().fetchAllDocuments();
+    assertEquals("Embedded node should not contain any documents before each test and start successfuly.",
+            0, indexData.size());
   }
 }
