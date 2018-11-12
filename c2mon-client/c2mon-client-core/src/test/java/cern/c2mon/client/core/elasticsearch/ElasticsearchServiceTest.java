@@ -64,14 +64,12 @@ public class ElasticsearchServiceTest {
 
   @BeforeClass
   public static void setUpClass() throws IOException, InterruptedException {
-    EmbeddedElasticsearchManager.stop();
     EmbeddedElasticsearchManager.start(elasticsearchProperties);
   }
 
   @AfterClass
   public static void tearDownClass() {
     EmbeddedElasticsearchManager.stop();
-    FileSystemUtils.deleteRecursively(new File(elasticsearchProperties.getEmbeddedStoragePath()));
   }
 
   @Before

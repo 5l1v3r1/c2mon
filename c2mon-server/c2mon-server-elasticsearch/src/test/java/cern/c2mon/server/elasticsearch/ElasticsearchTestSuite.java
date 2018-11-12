@@ -2,9 +2,9 @@ package cern.c2mon.server.elasticsearch;
 
 import cern.c2mon.server.elasticsearch.alarm.AlarmDocumentConverterTests;
 import cern.c2mon.server.elasticsearch.alarm.AlarmDocumentIndexerTests;
-import cern.c2mon.server.elasticsearch.config.ElasticsearchProperties;
 import cern.c2mon.server.elasticsearch.supervision.SupervisionEventDocumentIndexerTests;
 import cern.c2mon.server.elasticsearch.supervision.SupervisionEventDocumentTests;
+import cern.c2mon.server.elasticsearch.tag.BaseTagDocumentConverterTest;
 import cern.c2mon.server.elasticsearch.tag.TagDocumentConverterTests;
 import cern.c2mon.server.elasticsearch.tag.TagDocumentIndexerTests;
 import cern.c2mon.server.elasticsearch.tag.config.TagConfigDocumentConverterTests;
@@ -13,7 +13,6 @@ import cern.c2mon.server.elasticsearch.util.EmbeddedElasticsearchManager;
 import org.junit.AfterClass;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
-import org.springframework.util.FileSystemUtils;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
@@ -27,14 +26,13 @@ import org.springframework.util.FileSystemUtils;
     TagDocumentConverterTests.class,
     TagDocumentIndexerTests.class,
     TagConfigDocumentConverterTests.class,
-    TagConfigDocumentIndexerTests.class
+    TagConfigDocumentIndexerTests.class,
+    BaseTagDocumentConverterTest.class
 })
 public class ElasticsearchTestSuite {
 
   @AfterClass
   public static void cleanup() {
     EmbeddedElasticsearchManager.stop();
-    ElasticsearchProperties elasticsearchProperties = new ElasticsearchProperties();
-    FileSystemUtils.deleteRecursively(new java.io.File(elasticsearchProperties.getEmbeddedStoragePath()));
   }
 }
