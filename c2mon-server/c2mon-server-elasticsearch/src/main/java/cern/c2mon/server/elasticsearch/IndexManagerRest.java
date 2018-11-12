@@ -4,12 +4,10 @@ import cern.c2mon.server.elasticsearch.client.ElasticsearchClientRest;
 import cern.c2mon.server.elasticsearch.config.ElasticsearchProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.ElasticsearchStatusException;
-import org.elasticsearch.action.DocWriteResponse;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.delete.DeleteResponse;
-import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequest;
@@ -17,27 +15,27 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.common.inject.Singleton;
-import org.elasticsearch.common.io.stream.StreamInput;
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.rest.RestStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * Static utility singleton for working with Elasticsearch indices.
+ * Rest-based (check
+ * <a href="https://www.elastic.co/guide/en/elasticsearch/client/java-rest/current/index.html>
+ * Elasticsearch Documentation</a> for more details) supported index-related operations manager.
  *
- * @author Justin Lewis Salmon
+ * @author James Hamilton
+ * @author Serhiy Boychenko
  */
 @Slf4j
-@Singleton
+@Component
 @ConditionalOnProperty(name = "c2mon.server.elasticsearch.rest", havingValue="true")
 public class IndexManagerRest implements IndexManager {
 
@@ -46,6 +44,9 @@ public class IndexManagerRest implements IndexManager {
   private ElasticsearchProperties properties;
   private ElasticsearchClientRest client;
 
+  /**
+   * @param client {@link ElasticsearchClientRest} client instance.
+   */
   @Autowired
   public IndexManagerRest(ElasticsearchClientRest client) {
     this.client = client;
@@ -53,7 +54,7 @@ public class IndexManagerRest implements IndexManager {
   }
 
   @Override
-  public boolean create(String indexName, String type, String mapping) {
+  public boolean create(String indexName, String mapping) {
     synchronized (IndexManager.class) {
       if (exists(indexName)) {
         return true;
@@ -66,54 +67,12 @@ public class IndexManagerRest implements IndexManager {
               .put("index.number_of_replicas", properties.getReplicasPerShard())
       );
 
-      request.mapping("_doc", mapping, XContentType.JSON);
-
-      CreateIndexResponse createIndexResponse = client.getClient().indices().create(request, RequestOptions.DEFAULT);
-
-      XContentBuilder builder;
-      try {
-        Settings indexSettings = Settings.builder()
-                .put("number_of_shards", properties.getShardsPerIndex())
-                .put("number_of_replicas", properties.getReplicasPerShard())
-                .build();
-
-        String json = mapping.substring(mapping.indexOf("{") + 1, mapping.lastIndexOf("}"));
-
-        StreamInput targetStream = StreamInput.wrap(json.getBytes());
-
-        builder = XContentFactory.jsonBuilder()
-                .startObject()
-                .startObject("settings")
-                .value(indexSettings)
-                .endObject();
-
-
-        if (mapping != null) {
-          builder.startObject("mappings")
-                  .rawValue(targetStream.readBytesReference(json.length()), XContentType.JSON)
-                  .endObject();
-        }
-
-        builder.endObject();
-
-      } catch (IOException e) {
-        log.error("Error processing '{}' index mapping.", indexName, e);
-        return false;
-      }
-
-      client.getClient().
-
-      IndexRequest indexRequest = new IndexRequest(indexName);
-      indexRequest.type(type);
-      indexRequest.source(builder);
-      indexRequest.create(true);
+      request.mapping(TYPE, mapping, XContentType.JSON);
 
       boolean created = false;
       try {
-        IndexResponse indexResponse = client.getClient().index(indexRequest);
-        if (indexResponse.getResult() == DocWriteResponse.Result.CREATED) {
-          created = true;
-        }
+        CreateIndexResponse createIndexResponse = client.getClient().indices().create(request, RequestOptions.DEFAULT);
+        created = createIndexResponse.isAcknowledged();
       } catch (IOException e) {
         log.error("Error creating '{}' index on Elasticsearch.", indexName, e);
       }
@@ -129,14 +88,14 @@ public class IndexManagerRest implements IndexManager {
   }
 
   @Override
-  public boolean index(String indexName, String type, String source, String routing) {
-    return index(indexName, type, source, "", routing);
+  public boolean index(String indexName, String source, String routing) {
+    return index(indexName, source, "", routing);
   }
 
   @Override
-  public boolean index(String indexName, String type, String source, String id, String routing) {
+  public boolean index(String indexName, String source, String id, String routing) {
     synchronized (IndexManagerRest.class) {
-      IndexRequest indexRequest = new IndexRequest(indexName, type);
+      IndexRequest indexRequest = new IndexRequest(indexName, TYPE);
       if (id != null && !id.isEmpty()) {
         indexRequest.id(id);
       }
@@ -145,10 +104,10 @@ public class IndexManagerRest implements IndexManager {
 
       boolean indexed = false;
       try {
-        IndexResponse indexResponse = client.getClient().index(indexRequest);
+        IndexResponse indexResponse = client.getClient().index(indexRequest, RequestOptions.DEFAULT);
         indexed = indexResponse.status().equals(RestStatus.CREATED) || indexResponse.status().equals(RestStatus.OK);
       } catch (IOException e) {
-        log.error("Could not index '{} #{}' to index '{}'.", type, routing, indexName, e);
+        log.error("Could not index '#{}' to index '{}'.", routing, indexName, e);
       }
 
       client.waitForYellowStatus();
@@ -168,13 +127,13 @@ public class IndexManagerRest implements IndexManager {
       if (indexCache.contains(indexName)) {
         return true;
       }
-
       SearchRequest searchRequest = new SearchRequest(indexName);
+      searchRequest.types(TYPE);
       searchRequest.routing(routing);
 
       boolean exists = false;
       try {
-        SearchResponse searchResponse = client.getClient().search(searchRequest);
+        SearchResponse searchResponse = client.getClient().search(searchRequest, RequestOptions.DEFAULT);
         exists = searchResponse.status().equals(RestStatus.OK);
       } catch (ElasticsearchStatusException e) {
         if (!RestStatus.NOT_FOUND.equals(e.status())) {
@@ -193,21 +152,23 @@ public class IndexManagerRest implements IndexManager {
   }
 
   @Override
-  public boolean update(String indexName, String type, String source, String id) {
+  public boolean update(String indexName, String source, String id) {
     synchronized (IndexManagerRest.class) {
-      UpdateRequest updateRequest = new UpdateRequest(indexName, type, id);
+      UpdateRequest updateRequest = new UpdateRequest(indexName, TYPE, id);
       updateRequest.doc(source, XContentType.JSON);
       updateRequest.routing(id);
 
-      IndexRequest indexRequest = new IndexRequest(indexName, type, id);
+      IndexRequest indexRequest = new IndexRequest(indexName, TYPE);
+      if (id != null && !id.isEmpty()) {
+        indexRequest.id(id);
+      }
       indexRequest.source(source, XContentType.JSON);
-      indexRequest.routing(id);
 
       updateRequest.upsert(indexRequest);
 
       boolean updated = false;
       try {
-        UpdateResponse updateResponse = client.getClient().update(updateRequest);
+        UpdateResponse updateResponse = client.getClient().update(updateRequest, RequestOptions.DEFAULT);
         updated = updateResponse.status().equals(RestStatus.OK);
       } catch (IOException e) {
         log.error("Error updating index '{}'.", indexName, e);
@@ -220,17 +181,16 @@ public class IndexManagerRest implements IndexManager {
   }
 
   @Override
-  public boolean delete(String indexName, String type, String id, String routing) {
+  public boolean delete(String indexName, String id, String routing) {
     synchronized (IndexManagerRest.class) {
-
       boolean deleted = false;
       try {
         indexCache.remove(indexName);
 
-        DeleteRequest deleteRequest = new DeleteRequest(indexName, type, id);
+        DeleteRequest deleteRequest = new DeleteRequest(indexName, TYPE, id);
         deleteRequest.routing(routing);
 
-        DeleteResponse deleteResponse = client.getClient().delete(deleteRequest);
+        DeleteResponse deleteResponse = client.getClient().delete(deleteRequest, RequestOptions.DEFAULT);
         deleted = deleteResponse.status().equals(RestStatus.OK);
       } catch (IOException e) {
         log.error("Error deleting '{}' index from ElasticSearch.", indexName, e);

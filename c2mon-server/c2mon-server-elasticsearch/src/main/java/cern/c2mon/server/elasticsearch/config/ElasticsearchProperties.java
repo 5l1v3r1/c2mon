@@ -21,6 +21,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * @author Justin Lewis Salmon
+ * @author Serhiy Boychenko
  */
 @Data
 @ConfigurationProperties(prefix = "c2mon.server.elasticsearch")
@@ -55,11 +56,6 @@ public class ElasticsearchProperties {
    * Name of this node
    */
   private String nodeName = "c2mon";
-
-  /**
-   * Enable/disable startup of embedded Elasticsearch node
-   */
-  private boolean embedded = true;
 
   /**
    * Absolute path where Elasticsearch will store its data (only relevant
@@ -146,4 +142,9 @@ public class ElasticsearchProperties {
    * in the event of Elasticsearch communication failure
    */
   private String supervisionFallbackFile = "/tmp/es-supervision-fallback.txt";
+
+  /**
+   * Elasticsearch server version.
+   */
+  private String version = "6.4.0";
 }

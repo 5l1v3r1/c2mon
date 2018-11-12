@@ -50,6 +50,7 @@ import java.util.concurrent.TimeoutException;
  * @author Alban Marguet
  * @author Justin Lewis Salmon
  * @author James Hamilton
+ * @author Serhiy Boychenko
  */
 @Slf4j
 @Component
@@ -63,7 +64,7 @@ public class ElasticsearchClientTransport implements ElasticsearchClient<Client>
   private Client client;
 
   @Autowired
-  public ElasticsearchClientTransport(ElasticsearchProperties properties) throws NodeValidationException {
+  public ElasticsearchClientTransport(ElasticsearchProperties properties) {
     this.properties = properties;
     this.client = createClient();
 
@@ -107,9 +108,6 @@ public class ElasticsearchClientTransport implements ElasticsearchClient<Client>
     }, "EsClusterFinder").start();
   }
 
-  /**
-   * Block and wait for the cluster to become yellow.
-   */
   @Override
   public void waitForYellowStatus() {
     try {
@@ -150,13 +148,6 @@ public class ElasticsearchClientTransport implements ElasticsearchClient<Client>
   public boolean isClusterYellow() {
     ClusterHealthStatus status = getClusterHealth().getStatus();
     return status.equals(ClusterHealthStatus.YELLOW) || status.equals(ClusterHealthStatus.GREEN);
-  }
-
-  //solution from here: https://github.com/elastic/elasticsearch-hadoop/blob/fefcf8b191d287aca93a04144c67b803c6c81db5/mr/src/itest/java/org/elasticsearch/hadoop/EsEmbeddedServer.java
-  private static class PluginConfigurableNode extends Node {
-    public PluginConfigurableNode(Settings settings, Collection<Class<? extends Plugin>> classpathPlugins) {
-      super(InternalSettingsPreparer.prepareEnvironment(settings, null), classpathPlugins);
-    }
   }
 
   @Override

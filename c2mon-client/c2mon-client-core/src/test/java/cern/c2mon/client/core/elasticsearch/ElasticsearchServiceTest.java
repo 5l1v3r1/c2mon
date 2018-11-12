@@ -8,17 +8,15 @@ import cern.c2mon.server.cache.TagFacadeGateway;
 import cern.c2mon.server.common.datatag.DataTagCacheObject;
 import cern.c2mon.server.elasticsearch.IndexManagerRest;
 import cern.c2mon.server.elasticsearch.MappingFactory;
-import cern.c2mon.server.elasticsearch.client.ElasticsearchClientTransport;
+import cern.c2mon.server.elasticsearch.client.ElasticsearchClientRest;
 import cern.c2mon.server.elasticsearch.config.ElasticsearchProperties;
 import cern.c2mon.server.elasticsearch.tag.config.TagConfigDocumentConverter;
 import cern.c2mon.server.elasticsearch.tag.config.TagConfigDocumentIndexer;
-import cern.c2mon.server.elasticsearch.tag.config.TagConfigDocumentIndexerTransport;
 import cern.c2mon.server.elasticsearch.tag.config.TagConfigDocumentListener;
+import cern.c2mon.server.elasticsearch.util.EmbeddedElasticsearchManager;
 import cern.c2mon.shared.client.configuration.ConfigConstants;
 import org.apache.http.annotation.NotThreadSafe;
 import org.easymock.Mock;
-import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
-import org.elasticsearch.action.admin.indices.flush.FlushRequest;
 import org.elasticsearch.node.NodeValidationException;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -26,6 +24,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.util.FileSystemUtils;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
@@ -34,46 +34,52 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import static org.easymock.EasyMock.*;
-import static org.easymock.EasyMock.createNiceMock;
-import static org.easymock.EasyMock.replay;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 @NotThreadSafe
 public class ElasticsearchServiceTest {
 
-  private ElasticsearchClientTransport client;
+  private static ElasticsearchProperties elasticsearchProperties = new ElasticsearchProperties();
+
   private TagConfigDocumentListener tagDocumentListener;
   private C2monClientProperties properties = new C2monClientProperties();
-  private static ElasticsearchProperties elasticsearchProperties = new ElasticsearchProperties();
+  private ElasticsearchClientRest client;
+  private IndexManagerRest indexManagerRest;
+
   @Mock
   private TagFacadeGateway tagFacadeGateway;
 
   public ElasticsearchServiceTest() throws NodeValidationException {
-    this.client = new ElasticsearchClientTransport(elasticsearchProperties);
-    IndexManagerRest mustBeCreatedButVariableNotUsed = new IndexManagerRest(this.client);
-    TagConfigDocumentIndexer indexer = new TagConfigDocumentIndexer(client);
+    client = new ElasticsearchClientRest(elasticsearchProperties);
+    indexManagerRest = new IndexManagerRest(client);
+    TagConfigDocumentIndexer indexer = new TagConfigDocumentIndexer(elasticsearchProperties, indexManagerRest);
     ProcessCache processCache = createNiceMock(ProcessCache.class);
     EquipmentCache equipmentCache = createNiceMock(EquipmentCache.class);
     SubEquipmentCache subequipmentCache = createNiceMock(SubEquipmentCache.class);
     TagConfigDocumentConverter converter = new TagConfigDocumentConverter(processCache, equipmentCache, subequipmentCache);
     tagFacadeGateway = createNiceMock(TagFacadeGateway.class);
-    tagDocumentListener = new TagConfigDocumentListener(this.client, indexer, converter, tagFacadeGateway);
+    tagDocumentListener = new TagConfigDocumentListener(client, indexer, converter, tagFacadeGateway);
   }
 
   @BeforeClass
+  public static void setUpClass() throws IOException, InterruptedException {
+    EmbeddedElasticsearchManager.stop();
+    EmbeddedElasticsearchManager.start(elasticsearchProperties);
+  }
+
   @AfterClass
-  public static void cleanup() {
-    FileSystemUtils.deleteRecursively(new java.io.File(elasticsearchProperties.getEmbeddedStoragePath()));
+  public static void tearDownClass() {
+    EmbeddedElasticsearchManager.stop();
+    FileSystemUtils.deleteRecursively(new File(elasticsearchProperties.getEmbeddedStoragePath()));
   }
 
   @Before
   public void setupElasticsearch() throws InterruptedException, NodeValidationException {
     try {
       CompletableFuture<Void> nodeReady = CompletableFuture.runAsync(() -> {
-        //client.waitForYellowStatus();
-        client.getClient().admin().indices().delete(new DeleteIndexRequest(elasticsearchProperties.getTagConfigIndex()));
-        IndexManagerRest.create(elasticsearchProperties.getTagConfigIndex(), "tag_config", MappingFactory.createTagConfigMapping());
+        EmbeddedElasticsearchManager.getEmbeddedNode().deleteIndex(elasticsearchProperties.getTagConfigIndex());
+        indexManagerRest.create(elasticsearchProperties.getTagConfigIndex(), MappingFactory.createTagConfigMapping());
         try {
           Thread.sleep(1000); //it takes some time for the index to be recreated
         } catch (InterruptedException e) {
@@ -109,7 +115,7 @@ public class ElasticsearchServiceTest {
       tag.getMetadata().getMetadata().put(key1234, value1234);
       tagDocumentListener.onConfigurationEvent(tag, ConfigConstants.Action.CREATE);
 
-      client.getClient().admin().indices().flush(new FlushRequest()).actionGet();
+      EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
       Thread.sleep(10000);
 
       ElasticsearchService service = new ElasticsearchService(properties);
@@ -153,7 +159,7 @@ public class ElasticsearchServiceTest {
       tag.getMetadata().getMetadata().put(metadataKey, testUser);
       tagDocumentListener.onConfigurationEvent(tag, ConfigConstants.Action.CREATE);
 
-      client.getClient().admin().indices().flush(new FlushRequest()).actionGet();
+      EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
       Thread.sleep(10000);
 
       ElasticsearchService service = new ElasticsearchService(properties);

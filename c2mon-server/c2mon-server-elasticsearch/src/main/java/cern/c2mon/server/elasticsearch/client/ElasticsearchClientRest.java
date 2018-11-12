@@ -4,24 +4,26 @@ import cern.c2mon.server.elasticsearch.config.ElasticsearchProperties;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpHost;
-import org.elasticsearch.client.*;
+import org.elasticsearch.action.ActionListener;
+import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
+import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestClientBuilder;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.cluster.health.ClusterHealthStatus;
-import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.xcontent.XContentHelper;
-import org.elasticsearch.common.xcontent.XContentType;
-import org.elasticsearch.node.NodeValidationException;
-import org.elasticsearch.threadpool.ThreadPool;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
 
-
+/**
+ * Wrapper around {@link RestHighLevelClient}. Connects asynchronously, but also provides
+ * methods to block until a healthy connection is established.
+ *
+ * @author Serhiy Boychenko
+ */
 @Slf4j
 @Component
 @ConditionalOnProperty(name = "c2mon.server.elasticsearch.rest", havingValue="true")
@@ -31,20 +33,12 @@ public class ElasticsearchClientRest implements ElasticsearchClient<RestHighLeve
 
     private RestHighLevelClient restHighLevelClient;
 
-    @Getter
-    private ThreadPool threadPool;
-
     @Autowired
-    public ElasticsearchClientRest(ElasticsearchProperties properties) throws NodeValidationException {
+    public ElasticsearchClientRest(ElasticsearchProperties properties) {
         this.properties = properties;
 
         RestClientBuilder restClientBuilder =
-                RestClient.builder(new HttpHost(properties.getHost(), properties.getHttpPort(), "http"))
-                .setRequestConfigCallback(
-                        requestConfigBuilder -> requestConfigBuilder
-                                .setConnectTimeout(10000)
-                                .setSocketTimeout(120000))
-                .setMaxRetryTimeoutMillis(60000);
+                RestClient.builder(new HttpHost(properties.getHost(), properties.getHttpPort(), "http"));
 
         restHighLevelClient = new RestHighLevelClient(restClientBuilder);
 
@@ -55,23 +49,17 @@ public class ElasticsearchClientRest implements ElasticsearchClient<RestHighLeve
         } catch (IOException e) {
             log.error("IOError connecting to the Elasticsearch cluster at {}:{}", properties.getHost(), properties.getHttpPort(), e);
         }
-
-        Settings threadPoolSettings = Settings.builder()
-                .put("node.name", properties.getNodeName())
-                .build();
-
-        threadPool = new ThreadPool(threadPoolSettings);
     }
 
     @Override
     public void waitForYellowStatus() {
-        Map<String, String> parameters = new HashMap() {{
-            put("wait_for_status", "yellow");
-        }};
+        ClusterHealthRequest request = new ClusterHealthRequest();
+        request.timeout("60s");
+        request.waitForYellowStatus();
 
-        restClient.performRequestAsync("GET", "/_cluster/health", parameters, new ResponseListener() {
+        restHighLevelClient.cluster().healthAsync(request, RequestOptions.DEFAULT, new ActionListener<ClusterHealthResponse>() {
             @Override
-            public void onSuccess(Response response) {
+            public void onResponse(ClusterHealthResponse response) {
                 log.info("Waiting for Elasticsearch yellow status completed successfully. ");
             }
 
@@ -84,42 +72,29 @@ public class ElasticsearchClientRest implements ElasticsearchClient<RestHighLeve
     }
 
     private ClusterHealthStatus getClusterHealth() {
-        Map<String, String> parameters = new HashMap() {{
-            put("wait_for_status", "yellow");
-        }};
+        ClusterHealthRequest request = new ClusterHealthRequest();
+        request.timeout("60s");
+        request.waitForYellowStatus();
 
-        Response response;
         try {
-            response = restClient.performRequest("GET", "/_cluster/health", parameters);
+            return restHighLevelClient.cluster().health(request, RequestOptions.DEFAULT).getStatus();
         } catch (IOException e) {
             log.error("There was a problem executing Elasticsearch cluster health check request.", e);
-            return null;
         }
 
-        return getClusterHealthStatus(response).orElse(ClusterHealthStatus.RED);
-    }
-
-    private Optional<ClusterHealthStatus> getClusterHealthStatus(Response response) {
-        try (InputStream is = response.getEntity().getContent()) {
-            Map<String, Object> map = XContentHelper.convertToMap(XContentType.JSON.xContent(), is, true);
-            return Optional.of(ClusterHealthStatus.fromString((String) map.get("status")));
-        } catch (IOException e) {
-            log.error("There was a problem processing Elasticsearch cluster health check response.", e);
-        }
-        return Optional.empty();
+        return ClusterHealthStatus.RED;
     }
 
     @Override
     public void close() {
-        if (restClient != null) {
+        if (restHighLevelClient != null) {
             try {
-                restClient.close();
+                restHighLevelClient.close();
                 log.info("Closed Elasticsearch client.");
             } catch (IOException e) {
                 log.error("Error closing Elasticsearch client.", e);
                 return ;
             } finally {
-                restClient = null;
                 restHighLevelClient = null;
             }
         }

@@ -22,14 +22,16 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 
 /**
- * Static utility singleton for working with Elasticsearch indices.
+ * Transport-based (check
+ * <a href="https://www.elastic.co/guide/en/elasticsearch/client/java-api/current/transport-client.html>
+ * Elasticsearch Documentation</a> for more details) supported index-related operations manager.
  *
  * @author Justin Lewis Salmon
+ * @author Serhiy Boychenko
  */
 @Slf4j
 @Component
@@ -41,23 +43,17 @@ public class IndexManagerTransport implements IndexManager {
     private ElasticsearchProperties properties;
     private ElasticsearchClientTransport client;
 
+    /**
+     * @param client {@link ElasticsearchClientTransport} client instance.
+     */
     @Autowired
     public IndexManagerTransport(ElasticsearchClientTransport client) {
         this.client = client;
         this.properties = client.getProperties();
     }
 
-    /**
-     * Create a new index with an initial mapping.
-     *
-     * @param indexName the name of the index to create
-     * @param type      the mapping type
-     * @param mapping   the mapping source
-     *
-     * @return true if the index was successfully created, false otherwise
-     */
     @Override
-    public boolean create(String indexName, String type, String mapping) {
+    public boolean create(String indexName, String mapping) {
         synchronized (IndexManagerTransport.class) {
             if (exists(indexName)) {
                 return true;
@@ -70,7 +66,7 @@ public class IndexManagerTransport implements IndexManager {
                     .build());
 
             if (mapping != null) {
-                builder.addMapping(type, mapping, XContentType.JSON);
+                builder.addMapping(TYPE, mapping, XContentType.JSON);
             }
 
             log.debug("Creating new index with name {}", indexName);
@@ -94,14 +90,14 @@ public class IndexManagerTransport implements IndexManager {
     }
 
     @Override
-    public boolean index(String indexName, String type, String source, String routing) {
-        return index(indexName, type, source, "", routing);
+    public boolean index(String indexName, String source, String routing) {
+        return index(indexName, source, "", routing);
     }
 
     @Override
-    public boolean index(String indexName, String type, String source, String id, String routing) {
+    public boolean index(String indexName, String source, String id, String routing) {
         synchronized (IndexManagerTransport.class) {
-            IndexRequest indexRequest = new IndexRequest(indexName, type);
+            IndexRequest indexRequest = new IndexRequest(indexName, TYPE);
             if (id != null && !id.isEmpty()) {
                 indexRequest.id(id);
             }
@@ -113,7 +109,7 @@ public class IndexManagerTransport implements IndexManager {
                 IndexResponse indexResponse = client.getClient().index(indexRequest).get();
                 indexed = indexResponse.status().equals(RestStatus.CREATED) || indexResponse.status().equals(RestStatus.OK);
             } catch (InterruptedException | ExecutionException e) {
-                log.error("Error indexing '{} #{}' to '{}'.", type, id, indexName, e);
+                log.error("Error indexing '#{}' to '{}'.", id, indexName, e);
             }
 
             client.waitForYellowStatus();
@@ -122,16 +118,6 @@ public class IndexManagerTransport implements IndexManager {
         }
     }
 
-    /**
-     * Check if a given index exists.
-     * <p>
-     * The node-local index cache will be searched first before querying
-     * Elasticsearch directly.
-     *
-     * @param indexName the name of the index
-     *
-     * @return true if the index exists, false otherwise
-     */
     @Override
     public boolean exists(String indexName) {
         return exists(indexName, "");
@@ -147,6 +133,7 @@ public class IndexManagerTransport implements IndexManager {
             client.waitForYellowStatus();
 
             SearchRequest searchRequest = new SearchRequest(indexName);
+            searchRequest.types(TYPE);
             searchRequest.routing(routing);
 
             boolean exists = false;
@@ -166,13 +153,13 @@ public class IndexManagerTransport implements IndexManager {
     }
 
     @Override
-    public boolean update(String indexName, String type, String source, String id) {
+    public boolean update(String indexName, String source, String id) {
         synchronized (IndexManagerTransport.class) {
-            UpdateRequest updateRequest = new UpdateRequest(indexName, type, id);
+            UpdateRequest updateRequest = new UpdateRequest(indexName, TYPE, id);
             updateRequest.doc(source, XContentType.JSON);
             updateRequest.routing(id);
 
-            IndexRequest indexRequest = new IndexRequest(indexName, type, id);
+            IndexRequest indexRequest = new IndexRequest(indexName, TYPE, id);
             indexRequest.source(source, XContentType.JSON);
             indexRequest.routing(id);
 
@@ -192,17 +179,10 @@ public class IndexManagerTransport implements IndexManager {
         }
     }
 
-    /**
-     * Delete an index in Elasticsearch.
-     *
-     * @param indexName
-     *
-     * @return true if the request was acknowledged.
-     */
     @Override
-    public boolean delete(String indexName, String type, String id, String routing) {
+    public boolean delete(String indexName, String id, String routing) {
         synchronized (IndexManagerTransport.class) {
-            DeleteRequest deleteRequest = new DeleteRequest(indexName, type, id);
+            DeleteRequest deleteRequest = new DeleteRequest(indexName, TYPE, id);
             deleteRequest.routing(routing);
 
             boolean deleted = false;

@@ -30,13 +30,16 @@ public class BulkProcessorProxyTransport implements BulkProcessor.Listener, Bulk
 
   private final BulkProcessor bulkProcessor;
 
+  /**
+   * @param client to be used to communicate with Elasticsearch cluster.
+   */
   @Autowired
-  public BulkProcessorProxyTransport(final ElasticsearchClientTransport client, final ElasticsearchProperties properties) {
+  public BulkProcessorProxyTransport(final ElasticsearchClientTransport client) {
     this.bulkProcessor = BulkProcessor.builder(client.getClient(), this)
-          .setBulkActions(properties.getBulkActions())
-          .setBulkSize(new ByteSizeValue(properties.getBulkSize(), ByteSizeUnit.MB))
-          .setFlushInterval(TimeValue.timeValueSeconds(properties.getBulkFlushInterval()))
-          .setConcurrentRequests(properties.getConcurrentRequests())
+          .setBulkActions(client.getProperties().getBulkActions())
+          .setBulkSize(new ByteSizeValue(client.getProperties().getBulkSize(), ByteSizeUnit.MB))
+          .setFlushInterval(TimeValue.timeValueSeconds(client.getProperties().getBulkFlushInterval()))
+          .setConcurrentRequests(client.getProperties().getConcurrentRequests())
           .build();
   }
 

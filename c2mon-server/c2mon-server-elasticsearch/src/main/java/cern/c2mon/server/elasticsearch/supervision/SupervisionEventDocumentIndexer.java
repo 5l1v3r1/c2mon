@@ -42,6 +42,7 @@ import java.util.List;
  *
  * @author Alban Marguet
  * @author Justin Lewis Salmon
+ * @author Serhiy Boychenko
  */
 @Slf4j
 @Component
@@ -76,14 +77,14 @@ public class SupervisionEventDocumentIndexer implements IDBPersistenceHandler<Su
 
     log.debug("Adding new supervision event to index {}", indexName);
 
-    return indexManager.index(indexName, "supervision", supervisionEvent.toString(), supervisionEvent.getId());
+    return indexManager.index(indexName, supervisionEvent.toString(), supervisionEvent.getId());
   }
 
   private String getOrCreateIndex(SupervisionEventDocument supervisionEvent) {
     String index = indexNameManager.indexFor(supervisionEvent);
 
     if (!indexManager.exists(index)) {
-      indexManager.create(index, "supervision", MappingFactory.createSupervisionMapping());
+      indexManager.create(index, MappingFactory.createSupervisionMapping());
     }
 
     return index;

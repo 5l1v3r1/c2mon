@@ -20,9 +20,8 @@ import cern.c2mon.server.cache.config.CacheModule;
 import cern.c2mon.server.cache.dbaccess.config.CacheDbAccessModule;
 import cern.c2mon.server.cache.loading.config.CacheLoadingModule;
 import cern.c2mon.server.common.config.CommonModule;
-import cern.c2mon.server.elasticsearch.IndexManager;
-import cern.c2mon.server.elasticsearch.client.ElasticsearchClient;
 import cern.c2mon.server.elasticsearch.junit.CachePopulationRule;
+import cern.c2mon.server.elasticsearch.util.EmbeddedElasticsearchManager;
 import cern.c2mon.server.supervision.config.SupervisionModule;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -30,23 +29,13 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpHead;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import pl.allegro.tech.embeddedelasticsearch.EmbeddedElastic;
-import pl.allegro.tech.embeddedelasticsearch.PopularProperties;
 
 import java.io.IOException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-
-import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {
@@ -61,23 +50,12 @@ import static org.junit.Assert.assertTrue;
 public abstract class BaseElasticsearchIntegrationTest {
 
   private static ElasticsearchProperties properties = new ElasticsearchProperties();
-  private static EmbeddedElastic embeddedNode;
 
   protected String indexName;
 
   @BeforeClass
   public static void setUpClass() throws Exception {
-    if (embeddedNode == null) {
-      embeddedNode = EmbeddedElastic.builder()
-              .withElasticVersion("5.6.0")
-              .withSetting(PopularProperties.TRANSPORT_TCP_PORT, properties.getPort())
-              .withSetting(PopularProperties.HTTP_PORT, properties.getHttpPort())
-              .withSetting(PopularProperties.CLUSTER_NAME, properties.getClusterName())
-              .withStartTimeout(1, TimeUnit.MINUTES)
-              .build();
-
-      embeddedNode.start();
-    }
+    EmbeddedElasticsearchManager.start(properties);
   }
 
   @After
@@ -87,7 +65,7 @@ public abstract class BaseElasticsearchIntegrationTest {
   }
 
   protected EmbeddedElastic getEmbeddedNode() {
-    return embeddedNode;
+    return EmbeddedElasticsearchManager.getEmbeddedNode();
   }
 
   protected boolean doesIndexExist(String indexName) throws IOException {

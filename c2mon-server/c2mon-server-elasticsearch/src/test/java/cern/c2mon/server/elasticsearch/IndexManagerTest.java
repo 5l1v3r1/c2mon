@@ -1,13 +1,10 @@
 package cern.c2mon.server.elasticsearch;
 
-import cern.c2mon.server.elasticsearch.client.ElasticsearchClient;
 import cern.c2mon.server.elasticsearch.client.ElasticsearchClientRest;
 import cern.c2mon.server.elasticsearch.client.ElasticsearchClientTransport;
 import cern.c2mon.server.elasticsearch.config.BaseElasticsearchIntegrationTest;
-import cern.c2mon.server.elasticsearch.config.ElasticsearchProperties;
 import org.elasticsearch.node.NodeValidationException;
 import org.json.JSONObject;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,7 +15,6 @@ import org.springframework.core.io.ClassPathResource;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.lang.reflect.InvocationTargetException;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -75,30 +71,20 @@ public class IndexManagerTest extends BaseElasticsearchIntegrationTest {
     public void createTest() throws NodeValidationException, IOException {
         String mapping = loadMapping("mappings/test.json");
 
-        indexManager.create(indexName, "doc", mapping);
+        indexManager.create(indexName, mapping);
 
         assertTrue("Index should have been created.", doesIndexExist(indexName));
-    }
-
-    @Test
-    public void createExistingTest() throws NodeValidationException, IOException {
-        String mapping = loadMapping("mappings/test.json");
-
-        indexManager.create(indexName, "doc", mapping);
-
-        assertTrue("Index should have been created.", doesIndexExist(indexName));
-        assertTrue("Should not overwrite neither report an error.", indexManager.create(indexName, "doc", mapping));
     }
 
     @Test
     public void indexTestWithoutId() throws NodeValidationException, IOException {
         String mapping = loadMapping("mappings/test.json");
 
-        indexManager.create(indexName, "doc", mapping);
+        indexManager.create(indexName, mapping);
 
         getEmbeddedNode().refreshIndices();
 
-        indexManager.index(indexName, "doc", TEST_JSON,"1");
+        indexManager.index(indexName, TEST_JSON,"1");
 
         getEmbeddedNode().refreshIndices();
 
@@ -110,11 +96,11 @@ public class IndexManagerTest extends BaseElasticsearchIntegrationTest {
     public void indexTestWithId() throws NodeValidationException, IOException {
         String mapping = loadMapping("mappings/test.json");
 
-        indexManager.create(indexName, "doc", mapping);
+        indexManager.create(indexName, mapping);
 
         getEmbeddedNode().refreshIndices();
 
-        indexManager.index(indexName, "doc", TEST_JSON,"1", "1");
+        indexManager.index(indexName, TEST_JSON,"1", "1");
 
         getEmbeddedNode().refreshIndices();
 
@@ -126,7 +112,7 @@ public class IndexManagerTest extends BaseElasticsearchIntegrationTest {
     public void existsTestWithoutRouting() throws NodeValidationException, IOException {
         String mapping = loadMapping("mappings/test.json");
 
-        indexManager.create(indexName, "doc", mapping);
+        indexManager.create(indexName, mapping);
 
         getEmbeddedNode().refreshIndices();
 
@@ -137,7 +123,7 @@ public class IndexManagerTest extends BaseElasticsearchIntegrationTest {
     public void existsTestWithCachePurging() throws NodeValidationException, IOException {
         String mapping = loadMapping("mappings/test.json");
 
-        indexManager.create(indexName, "doc", mapping);
+        indexManager.create(indexName, mapping);
 
         getEmbeddedNode().refreshIndices();
 
@@ -151,7 +137,7 @@ public class IndexManagerTest extends BaseElasticsearchIntegrationTest {
     public void existsTestWithRouting() throws NodeValidationException, IOException {
         String mapping = loadMapping("mappings/test.json");
 
-        indexManager.create(indexName, "doc", mapping);
+        indexManager.create(indexName, mapping);
 
         getEmbeddedNode().refreshIndices();
 
@@ -163,11 +149,11 @@ public class IndexManagerTest extends BaseElasticsearchIntegrationTest {
     public void updateExistingIndexNonExistingDocument() throws IOException {
         String mapping = loadMapping("mappings/test.json");
 
-        indexManager.create(indexName, "doc", mapping);
+        indexManager.create(indexName, mapping);
 
         getEmbeddedNode().refreshIndices();
 
-        indexManager.update(indexName, "doc", TEST_JSON_2, "1");
+        indexManager.update(indexName, TEST_JSON_2, "1");
 
         getEmbeddedNode().refreshIndices();
 
@@ -183,15 +169,15 @@ public class IndexManagerTest extends BaseElasticsearchIntegrationTest {
     public void updateExistingIndexExistingDocument() throws IOException {
         String mapping = loadMapping("mappings/test.json");
 
-        indexManager.create(indexName, "doc", mapping);
+        indexManager.create(indexName, mapping);
 
         getEmbeddedNode().refreshIndices();
 
-        indexManager.index(indexName, "doc", TEST_JSON, "1", "1");
+        indexManager.index(indexName, TEST_JSON, "1", "1");
 
         getEmbeddedNode().refreshIndices();
 
-        indexManager.update(indexName, "doc", TEST_JSON_2, "1");
+        indexManager.update(indexName, TEST_JSON_2, "1");
 
         getEmbeddedNode().refreshIndices();
 
@@ -205,7 +191,7 @@ public class IndexManagerTest extends BaseElasticsearchIntegrationTest {
 
     @Test
     public void updateNonExistingIndex() throws UnknownHostException {
-        indexManager.update(indexName, "doc", TEST_JSON_2, "1");
+        indexManager.update(indexName, TEST_JSON_2, "1");
 
         getEmbeddedNode().refreshIndices();
 

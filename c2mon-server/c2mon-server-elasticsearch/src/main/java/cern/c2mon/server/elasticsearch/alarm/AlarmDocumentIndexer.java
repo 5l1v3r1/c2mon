@@ -34,6 +34,7 @@ import java.util.List;
  *
  * @author Alban Marguet
  * @author Justin Lewis Salmon
+ * @author Serhiy Boychenko
  */
 @Slf4j
 @Component
@@ -68,14 +69,14 @@ public class AlarmDocumentIndexer implements IDBPersistenceHandler<AlarmDocument
 
     log.debug("Indexing alarm #{} to index {}", alarm.getId(), indexName);
 
-    return indexManager.index(indexName, "alarm", alarm.toString(), alarm.getId());
+    return indexManager.index(indexName, alarm.toString(), alarm.getId());
   }
 
   private String getOrCreateIndex(AlarmDocument alarm) {
     String index = indexNameManager.indexFor(alarm);
 
     if (!indexManager.exists(index)) {
-      indexManager.create(index, "alarm", MappingFactory.createAlarmMapping());
+      indexManager.create(index, MappingFactory.createAlarmMapping());
     }
 
     return index;

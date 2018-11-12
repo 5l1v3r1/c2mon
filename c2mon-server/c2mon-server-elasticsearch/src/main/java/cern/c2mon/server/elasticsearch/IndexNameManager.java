@@ -12,12 +12,18 @@ import org.springframework.stereotype.Component;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+/**
+ * Manages index name definitions.
+ */
 @Component
 public class IndexNameManager {
 
     @Getter
     private ElasticsearchProperties properties;
 
+    /**
+     * @param properties of Elasticsearch server the application is communicating with.
+     */
     @Autowired
     public IndexNameManager(ElasticsearchProperties properties) {
         this.properties = properties;

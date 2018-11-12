@@ -18,14 +18,11 @@
 package cern.c2mon.server.elasticsearch.tag.config;
 
 import cern.c2mon.server.cache.TagFacadeGateway;
-import cern.c2mon.server.common.tag.Tag;
 import cern.c2mon.server.elasticsearch.IndexManager;
 import cern.c2mon.server.elasticsearch.MappingFactory;
-import cern.c2mon.server.elasticsearch.client.ElasticsearchClient;
 import cern.c2mon.server.elasticsearch.config.ElasticsearchProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.stereotype.Component;
 
 /**
@@ -34,12 +31,11 @@ import org.springframework.stereotype.Component;
  *
  * @author Szymon Halastra
  * @author Justin Lewis Salmon
+ * @author Serhiy Boychenko
  */
 @Slf4j
 @Component
 public class TagConfigDocumentIndexer {
-
-  private static final String TYPE = "tag_config";
 
   private final String configIndex;
 
@@ -50,47 +46,54 @@ public class TagConfigDocumentIndexer {
   @Autowired
   private TagConfigDocumentConverter converter;
 
+  /**
+   * @param properties of Elasticsearch server the application is communicating with.
+   * @param indexManager to perform index-related operations.
+   */
   @Autowired
   public TagConfigDocumentIndexer(final ElasticsearchProperties properties, final IndexManager indexManager) {
     this.indexManager = indexManager;
     this.configIndex = properties.getTagConfigIndex();
   }
 
+  /**
+   * Stores {@link TagConfigDocument} into related index.
+   *
+   * @param tag to be indexed.
+   */
   public void indexTagConfig(final TagConfigDocument tag) {
     if (!indexManager.exists(configIndex)) {
-      indexManager.create(configIndex, TYPE, MappingFactory.createTagConfigMapping());
+      indexManager.create(configIndex, MappingFactory.createTagConfigMapping());
     }
 
-    if (!indexManager.index(configIndex, TYPE, tag.toString(), tag.getId(), tag.getId())) {
-      log.error("Could not index '{} #{}' to index '{}'.", TYPE, tag.getId(), configIndex);
+    if (!indexManager.index(configIndex, tag.toString(), tag.getId(), tag.getId())) {
+      log.error("Could not index '#{}' to index '{}'.", tag.getId(), configIndex);
     }
   }
 
+  /**
+   * Updates {@link TagConfigDocument} (index and/or document is created in case it does not exist).
+   *
+   * @param tag to be updated.
+   */
   public void updateTagConfig(TagConfigDocument tag) {
     if (!indexManager.exists(configIndex)) {
-      indexManager.create(configIndex, TYPE, MappingFactory.createTagConfigMapping());
+      indexManager.create(configIndex, MappingFactory.createTagConfigMapping());
     }
 
-    indexManager.update(configIndex, TYPE, tag.toString(), tag.getId());
+    indexManager.update(configIndex, tag.toString(), tag.getId());
   }
 
+  /**
+   * Deletes {@link TagConfigDocument}.
+   *
+   * @param tagId of the document to be deleted.
+   */
   public void removeTagConfigById(final Long tagId) {
     if (!indexManager.exists(configIndex)) {
       return;
     }
 
-    indexManager.delete(configIndex, TYPE, String.valueOf(tagId), String.valueOf(tagId));
-  }
-
-  @ManagedOperation(description = "Re-indexes all tag configs from the cache to Elasticsearch")
-  public void reindexAllTagConfigDocuments() {
-    if (tagFacadeGateway == null) {
-      throw new IllegalStateException("Tag Facade Gateway is null");
-    }
-
-    for (Long id : tagFacadeGateway.getKeys()) {
-      Tag tag = tagFacadeGateway.getTag(id);
-      converter.convert(tag, tagFacadeGateway.getAlarms(tag)).ifPresent(this::updateTagConfig);
-    }
+    indexManager.delete(configIndex, String.valueOf(tagId), String.valueOf(tagId));
   }
 }
