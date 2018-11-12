@@ -41,7 +41,7 @@ import static org.junit.Assert.assertTrue;
  * @author Szymon Halastra
  * @author Justin Lewis Salmon
  */
-public class TagConfigDocumentIndexerTests extends BaseElasticsearchIntegrationTest {
+public class TagConfigDocumentIndexerTest extends BaseElasticsearchIntegrationTest {
 
   @Autowired
   private IndexNameManager indexNameManager;

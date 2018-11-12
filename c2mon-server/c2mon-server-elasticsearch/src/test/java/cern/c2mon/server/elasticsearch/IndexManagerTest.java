@@ -28,7 +28,7 @@ import static org.junit.Assert.assertTrue;
  * Tests for implementations of {@link IndexManager}.
  */
 @RunWith(Parameterized.class)
-public class IndexManagerTests extends BaseElasticsearchIntegrationTest {
+public class IndexManagerTest extends BaseElasticsearchIntegrationTest {
     private static final String NAME = "Test Name";
     private static final String UPDATED_NAME = NAME + " Updated";
     private static final String TEST_JSON = "{\"id\":\"1000\",\"name\":\"" + NAME + "\", \"description\":\"Test description\"}";
@@ -54,7 +54,7 @@ public class IndexManagerTests extends BaseElasticsearchIntegrationTest {
      *
      * @param indexManager instance for current test set execution.
      */
-    public IndexManagerTests(IndexManager indexManager) {
+    public IndexManagerTest(IndexManager indexManager) {
         this.indexManager = indexManager;
     }
 

@@ -36,7 +36,7 @@ import static junit.framework.TestCase.assertEquals;
  */
 @Slf4j
 @RunWith(JUnit4.class)
-public class AlarmDocumentConverterTests {
+public class AlarmDocumentConverterTest {
 
   private AlarmValueDocumentConverter converter = new AlarmValueDocumentConverter();
 

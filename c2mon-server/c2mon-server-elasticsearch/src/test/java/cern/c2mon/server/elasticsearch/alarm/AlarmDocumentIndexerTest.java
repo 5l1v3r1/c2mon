@@ -37,7 +37,7 @@ import static junit.framework.TestCase.assertTrue;
  * @author Alban Marguet
  * @author Justin Lewis Salmon
  */
-public class AlarmDocumentIndexerTests extends BaseElasticsearchIntegrationTest {
+public class AlarmDocumentIndexerTest extends BaseElasticsearchIntegrationTest {
 
   @Autowired
   private IndexNameManager indexNameManager;

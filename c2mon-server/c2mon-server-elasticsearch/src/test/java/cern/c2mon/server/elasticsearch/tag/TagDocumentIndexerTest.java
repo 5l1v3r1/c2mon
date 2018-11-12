@@ -14,48 +14,62 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with C2MON. If not, see <http://www.gnu.org/licenses/>.
  *****************************************************************************/
-package cern.c2mon.server.elasticsearch.supervision;
+package cern.c2mon.server.elasticsearch.tag;
 
 import cern.c2mon.pmanager.persistence.exception.IDBPersistenceException;
+import cern.c2mon.server.common.datatag.DataTagCacheObject;
 import cern.c2mon.server.elasticsearch.IndexNameManager;
 import cern.c2mon.server.elasticsearch.config.BaseElasticsearchIntegrationTest;
+import cern.c2mon.server.elasticsearch.junit.CachePopulationRule;
 import cern.c2mon.server.elasticsearch.util.EntityUtils;
-import cern.c2mon.shared.client.supervision.SupervisionEvent;
-import org.junit.Assert;
+import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.TestPropertySource;
 
 import java.io.IOException;
-import java.net.UnknownHostException;
 import java.util.List;
 
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Alban Marguet
- * @author Justin LEwis Salmon
+ * @author Justin Lewis Salmon
  */
-public class SupervisionEventDocumentIndexerTests extends BaseElasticsearchIntegrationTest {
+@TestPropertySource(properties = {
+    // Setting the number of concurrent requests to 0 causes the flush
+    // operation of the bulk to be executed in a synchronous manner
+    "c2mon.server.elasticsearch.concurrentRequests=0"
+})
+public class TagDocumentIndexerTest extends BaseElasticsearchIntegrationTest {
+
+  @Autowired
+  private TagDocumentIndexer indexer;
 
   @Autowired
   private IndexNameManager indexNameManager;
 
+  @Rule
   @Autowired
-  private SupervisionEventDocumentIndexer indexer;
+  public CachePopulationRule cachePopulationRule;
 
-  private SupervisionEventDocument document;
+  @Autowired
+  private TagDocumentConverter converter;
+
+  private TagDocument document;
 
   @Before
   public void setUp() {
-    SupervisionEvent event = EntityUtils.createSupervisionEvent();
-    document = new SupervisionEventDocumentConverter().convert(event);
+    DataTagCacheObject tag = (DataTagCacheObject) EntityUtils.createDataTag();
+    document = converter.convert(tag).orElseThrow(() -> new IllegalArgumentException("TagDocument conversion failed"));
     indexName = indexNameManager.indexFor(document);
   }
 
   @Test
-  public void logSingleSupervisionEventTest() throws IDBPersistenceException, IOException {
+  public void indexSingleTagTest() throws IDBPersistenceException, InterruptedException, IOException {
     indexer.storeData(document);
 
     getEmbeddedNode().refreshIndices();
@@ -63,11 +77,11 @@ public class SupervisionEventDocumentIndexerTests extends BaseElasticsearchInteg
     assertTrue("Index should have been created.", doesIndexExist(indexName));
 
     List<String> indexData = getEmbeddedNode().fetchAllDocuments(indexName);
-    Assert.assertEquals("Index should have one document inserted.", 1, indexData.size());
+    assertEquals("Index should have one document inserted.", 1, indexData.size());
   }
 
   @Test
-  public void logMultipleSupervisionEventsTest() throws IDBPersistenceException, IOException {
+  public void indexMultipleTagsTest() throws IDBPersistenceException, InterruptedException, IOException {
     indexer.storeData(document);
     indexer.storeData(document);
 
@@ -76,6 +90,6 @@ public class SupervisionEventDocumentIndexerTests extends BaseElasticsearchInteg
     assertTrue("Index should have been created.", doesIndexExist(indexName));
 
     List<String> indexData = getEmbeddedNode().fetchAllDocuments(indexName);
-    Assert.assertEquals("Index should have two documents inserted.", 2, indexData.size());
+    assertEquals("Index should have two documents inserted.", 2, indexData.size());
   }
 }

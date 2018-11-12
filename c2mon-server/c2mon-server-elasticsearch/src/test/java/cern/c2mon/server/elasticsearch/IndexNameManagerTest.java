@@ -14,7 +14,7 @@ import static junit.framework.TestCase.assertEquals;
 /**
  * @author Justin Lewis Salmon
  */
-public class IndexNameManagerTests extends BaseElasticsearchIntegrationTest {
+public class IndexNameManagerTest extends BaseElasticsearchIntegrationTest {
 
   @Autowired
   private IndexNameManager indexNameManager;
