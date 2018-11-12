@@ -53,6 +53,11 @@ public abstract class BaseElasticsearchIntegrationTest {
 
   protected String indexName;
 
+  @BeforeClass
+  public static void setUpClass() {
+    EmbeddedElasticsearchManager.start(properties);
+  }
+
   @After
   public void tearDown() {
     getEmbeddedNode().deleteIndex(indexName);
