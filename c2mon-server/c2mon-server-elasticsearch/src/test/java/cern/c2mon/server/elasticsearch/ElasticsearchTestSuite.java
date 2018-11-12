@@ -9,8 +9,8 @@ import cern.c2mon.server.elasticsearch.tag.TagDocumentConverterTests;
 import cern.c2mon.server.elasticsearch.tag.TagDocumentIndexerTests;
 import cern.c2mon.server.elasticsearch.tag.config.TagConfigDocumentConverterTests;
 import cern.c2mon.server.elasticsearch.tag.config.TagConfigDocumentIndexerTests;
+import cern.c2mon.server.elasticsearch.util.EmbeddedElasticsearchManager;
 import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.springframework.util.FileSystemUtils;
@@ -18,6 +18,7 @@ import org.springframework.util.FileSystemUtils;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
     ElasticsearchModuleIntegrationTest.class,
+    IndexManagerTests.class,
     IndexNameManagerTests.class,
     AlarmDocumentConverterTests.class,
     AlarmDocumentIndexerTests.class,
@@ -30,9 +31,9 @@ import org.springframework.util.FileSystemUtils;
 })
 public class ElasticsearchTestSuite {
 
-  @BeforeClass
   @AfterClass
   public static void cleanup() {
+    EmbeddedElasticsearchManager.stop();
     ElasticsearchProperties elasticsearchProperties = new ElasticsearchProperties();
     FileSystemUtils.deleteRecursively(new java.io.File(elasticsearchProperties.getEmbeddedStoragePath()));
   }
