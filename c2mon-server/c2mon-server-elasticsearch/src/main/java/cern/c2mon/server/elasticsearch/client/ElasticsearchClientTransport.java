@@ -21,6 +21,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.client.transport.NoNodeAvailableException;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.cluster.health.ClusterHealthStatus;
 import org.elasticsearch.common.settings.Settings;
@@ -112,7 +113,7 @@ public class ElasticsearchClientTransport implements ElasticsearchClient<Client>
   }
 
   @Override
-  public void waitForYellowStatus() {
+  public final void waitForYellowStatus() {
     try {
       CompletableFuture<Void> nodeReady = CompletableFuture.runAsync(() -> {
           while (true) {
@@ -122,11 +123,7 @@ public class ElasticsearchClientTransport implements ElasticsearchClient<Client>
               break;
             }
 
-            try {
-              Thread.sleep(100L);
-            } catch (InterruptedException e) {
-              log.debug("Waiting for yellow status interrupted", e);
-            }
+            sleep(100L);
           }
           log.info("Elasticsearch cluster is yellow");
         }
@@ -134,7 +131,15 @@ public class ElasticsearchClientTransport implements ElasticsearchClient<Client>
       nodeReady.get(120, TimeUnit.SECONDS);
     } catch (InterruptedException | ExecutionException | TimeoutException e) {
       log.error("Exception when waiting for yellow status", e);
-      throw new IllegalStateException("Timeout when waiting for Elasticsearch yellow status!");
+      throw new IllegalStateException("Exception when waiting for Elasticsearch yellow status!");
+    }
+  }
+
+  private void sleep(long time) {
+    try {
+      Thread.sleep(time);
+    } catch (InterruptedException e) {
+      log.debug("Waiting for yellow status interrupted", e);
     }
   }
 
@@ -149,8 +154,9 @@ public class ElasticsearchClientTransport implements ElasticsearchClient<Client>
     try {
       ClusterHealthStatus status = getClusterHealth().getStatus();
       return status.equals(ClusterHealthStatus.YELLOW) || status.equals(ClusterHealthStatus.GREEN);
-    } catch (Exception e) {
-      log.info("Elasticsearch cluster not yet ready: {}", e);
+    } catch (NoNodeAvailableException e) {
+      log.info("Elasticsearch cluster not yet ready: {}", e.getMessage());
+      log.debug("Elasticsearch cluster not yet ready: ", e);
     }
     return false;
   }
