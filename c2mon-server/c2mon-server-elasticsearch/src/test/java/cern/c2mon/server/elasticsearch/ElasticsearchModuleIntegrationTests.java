@@ -49,7 +49,7 @@ import static org.junit.Assert.assertEquals;
         CachePopulationRule.class
 })
 @RunWith(SpringJUnit4ClassRunner.class)
-public class ElasticsearchModuleIntegrationTest {
+public class ElasticsearchModuleIntegrationTests {
 
   @Test
   public void testModuleStartup() throws IOException {

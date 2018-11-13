@@ -1,4 +1,4 @@
-/*******************************************************************************
+/******************************************************************************
  * Copyright (C) 2010-2016 CERN. All rights not expressly granted are reserved.
  *
  * This file is part of the CERN Control and Monitoring Platform 'C2MON'.
@@ -13,17 +13,16 @@
  *
  * You should have received a copy of the GNU Lesser General Public License
  * along with C2MON. If not, see <http://www.gnu.org/licenses/>.
- ******************************************************************************/
+ *****************************************************************************/
+package cern.c2mon.server.elasticsearch.alarm;
 
-package cern.c2mon.server.elasticsearch.tag.config;
-
+import cern.c2mon.pmanager.persistence.exception.IDBPersistenceException;
 import cern.c2mon.server.cache.config.CacheModule;
 import cern.c2mon.server.cache.dbaccess.config.CacheDbAccessModule;
 import cern.c2mon.server.cache.loading.config.CacheLoadingModule;
+import cern.c2mon.server.common.alarm.AlarmCacheObject;
 import cern.c2mon.server.common.config.CommonModule;
-import cern.c2mon.server.common.datatag.DataTagCacheObject;
 import cern.c2mon.server.elasticsearch.ElasticsearchSuiteTest;
-import cern.c2mon.server.elasticsearch.IndexManager;
 import cern.c2mon.server.elasticsearch.IndexNameManager;
 import cern.c2mon.server.elasticsearch.config.ElasticsearchModule;
 import cern.c2mon.server.elasticsearch.junit.CachePopulationRule;
@@ -31,24 +30,23 @@ import cern.c2mon.server.elasticsearch.util.EmbeddedElasticsearchManager;
 import cern.c2mon.server.elasticsearch.util.EntityUtils;
 import cern.c2mon.server.elasticsearch.util.IndexUtils;
 import cern.c2mon.server.supervision.config.SupervisionModule;
-import org.json.JSONObject;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.io.IOException;
+import java.sql.Timestamp;
 import java.util.List;
-import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static junit.framework.TestCase.assertTrue;
 
 /**
- * @author Szymon Halastra
+ * @author Alban Marguet
  * @author Justin Lewis Salmon
  */
 @ContextConfiguration(classes = {
@@ -61,32 +59,22 @@ import static org.junit.Assert.assertTrue;
         CachePopulationRule.class
 })
 @RunWith(SpringJUnit4ClassRunner.class)
-public class TagConfigDocumentIndexerTest {
+public class AlarmDocumentIndexerTests {
 
   @Autowired
   private IndexNameManager indexNameManager;
 
   @Autowired
-  private IndexManager indexManager;
-
-  @Autowired
-  private TagConfigDocumentIndexer indexer;
-
-  @Autowired
-  private TagConfigDocumentConverter converter;
-
-  @Rule
-  @Autowired
-  public CachePopulationRule cachePopulationRule;
+  private AlarmDocumentIndexer indexer;
 
   private String indexName;
-  private DataTagCacheObject tag;
-  private TagConfigDocument document;
+  private AlarmDocument document;
 
   @Before
-  public void setUp() throws Exception {
-    tag = (DataTagCacheObject) EntityUtils.createDataTag();
-    document = converter.convert(tag).orElseThrow(()->new Exception("Tag conversion failed"));
+  public void setUp() {
+    AlarmCacheObject alarm = (AlarmCacheObject) EntityUtils.createAlarm();
+    alarm.setTimestamp(new Timestamp(0));
+    document = new AlarmValueDocumentConverter().convert(alarm);
     indexName = indexNameManager.indexFor(document);
   }
 
@@ -97,55 +85,27 @@ public class TagConfigDocumentIndexerTest {
   }
 
   @Test
-  public void addDataTag() throws Exception {
-    indexer.indexTagConfig(document);
+  public void indexSingleAlarmTest() throws IDBPersistenceException, IOException {
+    indexer.storeData(document);
 
     EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
 
-    assertTrue("Index should have been created.",
-            IndexUtils.doesIndexExist(indexName, ElasticsearchSuiteTest.getProperties()));
+    assertTrue("Index should have been created.", IndexUtils.doesIndexExist(indexName, ElasticsearchSuiteTest.getProperties()));
 
     List<String> indexData = EmbeddedElasticsearchManager.getEmbeddedNode().fetchAllDocuments(indexName);
-    assertEquals("Index should have one document inserted.", 1, indexData.size());
+    Assert.assertEquals("Index should have one document inserted.", 1, indexData.size());
   }
 
   @Test
-  public void updateDataTag() throws Exception {
-    document.put("description", tag.getDescription() + " MODIFIED.");
-    ((Map<String, Object>) document.get("metadata")).put("spam", "eggs");
-    indexer.updateTagConfig(document);
+  public void indexMultipleAlarmTest() throws IDBPersistenceException, IOException {
+    indexer.storeData(document);
+    indexer.storeData(document);
 
     EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
 
-    assertTrue("Index should have been created when trying to update non-existing one.",
-            IndexUtils.doesIndexExist(indexName, ElasticsearchSuiteTest.getProperties()));
+    assertTrue("Index should have been created.", IndexUtils.doesIndexExist(indexName, ElasticsearchSuiteTest.getProperties()));
 
     List<String> indexData = EmbeddedElasticsearchManager.getEmbeddedNode().fetchAllDocuments(indexName);
-    assertEquals("Index should have one document inserted.", 1, indexData.size());
-
-    JSONObject jsonObject = new JSONObject(indexData.get(0));
-
-    assertEquals(tag.getDescription() + " MODIFIED.", jsonObject.getString("description"));
-    assertEquals("eggs", jsonObject.getJSONObject("metadata").getString("spam"));
-  }
-
-  @Test
-  public void removeDataTag() throws Exception {
-    indexer.indexTagConfig(document);
-
-    EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
-
-    List<String> indexData = EmbeddedElasticsearchManager.getEmbeddedNode().fetchAllDocuments(indexName);
-    assertEquals("Index should have been created.", 1, indexData.size());
-
-    indexer.removeTagConfigById(tag.getId());
-
-    EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
-
-    assertTrue("Index should exist after tag config deletion.",
-            IndexUtils.doesIndexExist(indexName, ElasticsearchSuiteTest.getProperties()));
-
-    indexData = EmbeddedElasticsearchManager.getEmbeddedNode().fetchAllDocuments(indexName);
-    assertEquals("Index documents should been deleted.", 0, indexData.size());
+    Assert.assertEquals("Index should have two documents inserted.", 2, indexData.size());
   }
 }

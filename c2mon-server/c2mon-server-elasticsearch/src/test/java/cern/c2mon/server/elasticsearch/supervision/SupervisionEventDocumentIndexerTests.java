@@ -14,13 +14,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with C2MON. If not, see <http://www.gnu.org/licenses/>.
  *****************************************************************************/
-package cern.c2mon.server.elasticsearch.alarm;
+package cern.c2mon.server.elasticsearch.supervision;
 
 import cern.c2mon.pmanager.persistence.exception.IDBPersistenceException;
 import cern.c2mon.server.cache.config.CacheModule;
 import cern.c2mon.server.cache.dbaccess.config.CacheDbAccessModule;
 import cern.c2mon.server.cache.loading.config.CacheLoadingModule;
-import cern.c2mon.server.common.alarm.AlarmCacheObject;
 import cern.c2mon.server.common.config.CommonModule;
 import cern.c2mon.server.elasticsearch.ElasticsearchSuiteTest;
 import cern.c2mon.server.elasticsearch.IndexNameManager;
@@ -30,6 +29,7 @@ import cern.c2mon.server.elasticsearch.util.EmbeddedElasticsearchManager;
 import cern.c2mon.server.elasticsearch.util.EntityUtils;
 import cern.c2mon.server.elasticsearch.util.IndexUtils;
 import cern.c2mon.server.supervision.config.SupervisionModule;
+import cern.c2mon.shared.client.supervision.SupervisionEvent;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -40,14 +40,13 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.IOException;
-import java.sql.Timestamp;
 import java.util.List;
 
 import static junit.framework.TestCase.assertTrue;
 
 /**
  * @author Alban Marguet
- * @author Justin Lewis Salmon
+ * @author Justin LEwis Salmon
  */
 @ContextConfiguration(classes = {
         CommonModule.class,
@@ -59,22 +58,21 @@ import static junit.framework.TestCase.assertTrue;
         CachePopulationRule.class
 })
 @RunWith(SpringJUnit4ClassRunner.class)
-public class AlarmDocumentIndexerTest {
+public class SupervisionEventDocumentIndexerTests {
 
   @Autowired
   private IndexNameManager indexNameManager;
 
   @Autowired
-  private AlarmDocumentIndexer indexer;
+  private SupervisionEventDocumentIndexer indexer;
 
   private String indexName;
-  private AlarmDocument document;
+  private SupervisionEventDocument document;
 
   @Before
   public void setUp() {
-    AlarmCacheObject alarm = (AlarmCacheObject) EntityUtils.createAlarm();
-    alarm.setTimestamp(new Timestamp(0));
-    document = new AlarmValueDocumentConverter().convert(alarm);
+    SupervisionEvent event = EntityUtils.createSupervisionEvent();
+    document = new SupervisionEventDocumentConverter().convert(event);
     indexName = indexNameManager.indexFor(document);
   }
 
@@ -85,7 +83,7 @@ public class AlarmDocumentIndexerTest {
   }
 
   @Test
-  public void indexSingleAlarmTest() throws IDBPersistenceException, IOException {
+  public void logSingleSupervisionEventTest() throws IDBPersistenceException, IOException {
     indexer.storeData(document);
 
     EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
@@ -97,7 +95,7 @@ public class AlarmDocumentIndexerTest {
   }
 
   @Test
-  public void indexMultipleAlarmTest() throws IDBPersistenceException, IOException {
+  public void logMultipleSupervisionEventsTest() throws IDBPersistenceException, IOException {
     indexer.storeData(document);
     indexer.storeData(document);
 

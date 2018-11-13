@@ -37,7 +37,7 @@ import static org.mockito.Mockito.when;
  * @author Szymon Halastra
  * @author Justin Lewis Salmon
  */
-public class TagConfigDocumentConverterTest extends BaseTagDocumentConverterTest {
+public class TagConfigDocumentConverterTests extends BaseTagDocumentConverterTest {
 
   @InjectMocks
   private TagConfigDocumentConverter converter;

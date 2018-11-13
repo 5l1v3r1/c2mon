@@ -28,7 +28,7 @@ import static junit.framework.TestCase.assertEquals;
  * @author Alban Marguet
  */
 @RunWith(JUnit4.class)
-public class SupervisionEventDocumentTest {
+public class SupervisionEventDocumentTests {
 
   private SupervisionEventDocumentConverter converter = new SupervisionEventDocumentConverter();
 

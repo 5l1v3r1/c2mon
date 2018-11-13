@@ -30,7 +30,7 @@ import static org.junit.Assert.assertTrue;
  * Tests for implementations of {@link IndexManager}.
  */
 @RunWith(Parameterized.class)
-public class IndexManagerTest {
+public class IndexManagerTests {
     private static final String NAME = "Test Name";
     private static final String UPDATED_NAME = NAME + " Updated";
     private static final String TEST_JSON = "{\"id\":\"1000\",\"name\":\"" + NAME + "\", \"description\":\"Test description\"}";
@@ -57,7 +57,7 @@ public class IndexManagerTest {
      *
      * @param indexManager instance for current test set execution.
      */
-    public IndexManagerTest(IndexManager indexManager) {
+    public IndexManagerTests(IndexManager indexManager) {
         this.indexManager = indexManager;
     }
 

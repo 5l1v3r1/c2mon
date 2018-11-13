@@ -8,7 +8,7 @@ import static junit.framework.TestCase.assertEquals;
 /**
  * @author Justin Lewis Salmon
  */
-public class IndexNameManagerTest {
+public class IndexNameManagerTests {
 
   private IndexNameManager indexNameManager = new IndexNameManager(ElasticsearchSuiteTest.getProperties());
 
