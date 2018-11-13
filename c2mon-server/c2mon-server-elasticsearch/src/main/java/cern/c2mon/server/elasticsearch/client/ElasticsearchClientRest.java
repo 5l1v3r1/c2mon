@@ -33,6 +33,9 @@ public class ElasticsearchClientRest implements ElasticsearchClient<RestHighLeve
 
     private RestHighLevelClient restHighLevelClient;
 
+    /**
+     * @param properties to initialize REST client.
+     */
     @Autowired
     public ElasticsearchClientRest(ElasticsearchProperties properties) {
         this.properties = properties;
@@ -66,7 +69,7 @@ public class ElasticsearchClientRest implements ElasticsearchClient<RestHighLeve
             @Override
             public void onFailure(Exception e) {
                 log.error("Exception when waiting for yellow status", e);
-                throw new RuntimeException("Timeout when waiting for Elasticsearch yellow status!");
+                throw new IllegalStateException("Timeout when waiting for Elasticsearch yellow status!");
             }
         });
     }
@@ -94,8 +97,6 @@ public class ElasticsearchClientRest implements ElasticsearchClient<RestHighLeve
             } catch (IOException e) {
                 log.error("Error closing Elasticsearch client.", e);
                 return ;
-            } finally {
-                restHighLevelClient = null;
             }
         }
     }

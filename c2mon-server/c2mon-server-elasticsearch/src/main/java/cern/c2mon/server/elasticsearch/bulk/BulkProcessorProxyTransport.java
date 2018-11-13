@@ -68,6 +68,6 @@ public class BulkProcessorProxyTransport implements BulkProcessor.Listener, Bulk
   @Override
   public void afterBulk(long executionId, BulkRequest request, Throwable failure) {
     log.warn("Error executing bulk operation", failure);
-    throw new RuntimeException(failure);
+    throw new IllegalStateException(failure);
   }
 }

@@ -87,6 +87,8 @@ public interface IndexManager {
      * Delete an index in Elasticsearch.
      *
      * @param indexName to be deleted.
+     * @param id of existing document.
+     * @param routing representing particular shard.
      *
      * @return true if index was successfully deleted, false otherwise.
      */

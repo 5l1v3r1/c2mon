@@ -63,6 +63,9 @@ public class ElasticsearchClientTransport implements ElasticsearchClient<Client>
   @Getter
   private Client client;
 
+  /**
+   * @param properties to initialize Transport client.
+   */
   @Autowired
   public ElasticsearchClientTransport(ElasticsearchProperties properties) {
     this.properties = properties;
@@ -97,7 +100,7 @@ public class ElasticsearchClientTransport implements ElasticsearchClient<Client>
   /**
    * Connect to the cluster in a separate thread.
    */
-  private void connectAsynchronously() {
+  private final void connectAsynchronously() {
     log.info("Trying to connect to Elasticsearch cluster {} at {}:{}",
         properties.getClusterName(), properties.getHost(), properties.getPort());
 
@@ -134,7 +137,7 @@ public class ElasticsearchClientTransport implements ElasticsearchClient<Client>
       nodeReady.get(120, TimeUnit.SECONDS);
     } catch (InterruptedException | ExecutionException | TimeoutException e) {
       log.error("Exception when waiting for yellow status", e);
-      throw new RuntimeException("Timeout when waiting for Elasticsearch yellow status!");
+      throw new IllegalStateException("Timeout when waiting for Elasticsearch yellow status!");
     }
   }
 
@@ -155,7 +158,6 @@ public class ElasticsearchClientTransport implements ElasticsearchClient<Client>
     if (client != null) {
       client.close();
       log.info("Closed client {}", client.settings().get("node.name"));
-      client = null;
     }
   }
 }

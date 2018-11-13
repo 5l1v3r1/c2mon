@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 /**
  * Manages index name definitions.
@@ -105,6 +106,6 @@ public class IndexNameManager {
                 break;
         }
 
-        return prefix + new SimpleDateFormat(dateFormat).format(new Date(timestamp));
+        return prefix + new SimpleDateFormat(dateFormat, Locale.getDefault()).format(new Date(timestamp));
     }
 }

@@ -75,7 +75,8 @@ public class IndexManagerTransport implements IndexManager {
             try {
                 CreateIndexResponse response = builder.get();
                 created = response.isAcknowledged();
-            } catch (ResourceAlreadyExistsException ex) {
+            } catch (ResourceAlreadyExistsException e) {
+                log.debug("Index already exists.", e);
                 created = true;
             }
 
