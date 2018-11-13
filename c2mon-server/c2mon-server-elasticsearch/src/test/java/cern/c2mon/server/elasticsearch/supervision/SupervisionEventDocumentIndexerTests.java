@@ -21,6 +21,7 @@ import cern.c2mon.server.cache.config.CacheModule;
 import cern.c2mon.server.cache.dbaccess.config.CacheDbAccessModule;
 import cern.c2mon.server.cache.loading.config.CacheLoadingModule;
 import cern.c2mon.server.common.config.CommonModule;
+import cern.c2mon.server.elasticsearch.AbstractElasticsearchTest;
 import cern.c2mon.server.elasticsearch.ElasticsearchSuiteTest;
 import cern.c2mon.server.elasticsearch.IndexNameManager;
 import cern.c2mon.server.elasticsearch.config.ElasticsearchModule;
@@ -48,17 +49,7 @@ import static junit.framework.TestCase.assertTrue;
  * @author Alban Marguet
  * @author Justin LEwis Salmon
  */
-@ContextConfiguration(classes = {
-        CommonModule.class,
-        CacheModule.class,
-        CacheDbAccessModule.class,
-        CacheLoadingModule.class,
-        SupervisionModule.class,
-        ElasticsearchModule.class,
-        CachePopulationRule.class
-})
-@RunWith(SpringJUnit4ClassRunner.class)
-public class SupervisionEventDocumentIndexerTests {
+public class SupervisionEventDocumentIndexerTests extends AbstractElasticsearchTest {
 
   @Autowired
   private IndexNameManager indexNameManager;
@@ -66,7 +57,6 @@ public class SupervisionEventDocumentIndexerTests {
   @Autowired
   private SupervisionEventDocumentIndexer indexer;
 
-  private String indexName;
   private SupervisionEventDocument document;
 
   @Before
@@ -74,12 +64,6 @@ public class SupervisionEventDocumentIndexerTests {
     SupervisionEvent event = EntityUtils.createSupervisionEvent();
     document = new SupervisionEventDocumentConverter().convert(event);
     indexName = indexNameManager.indexFor(document);
-  }
-
-  @After
-  public void tearDown() {
-    EmbeddedElasticsearchManager.getEmbeddedNode().deleteIndex(indexName);
-    EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
   }
 
   @Test

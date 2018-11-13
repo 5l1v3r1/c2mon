@@ -22,6 +22,7 @@ import cern.c2mon.server.cache.dbaccess.config.CacheDbAccessModule;
 import cern.c2mon.server.cache.loading.config.CacheLoadingModule;
 import cern.c2mon.server.common.config.CommonModule;
 import cern.c2mon.server.common.datatag.DataTagCacheObject;
+import cern.c2mon.server.elasticsearch.AbstractElasticsearchTest;
 import cern.c2mon.server.elasticsearch.ElasticsearchSuiteTest;
 import cern.c2mon.server.elasticsearch.IndexNameManager;
 import cern.c2mon.server.elasticsearch.config.ElasticsearchModule;
@@ -50,17 +51,7 @@ import static org.junit.Assert.assertTrue;
  * @author Alban Marguet
  * @author Justin Lewis Salmon
  */
-@ContextConfiguration(classes = {
-        CommonModule.class,
-        CacheModule.class,
-        CacheDbAccessModule.class,
-        CacheLoadingModule.class,
-        SupervisionModule.class,
-        ElasticsearchModule.class,
-        CachePopulationRule.class
-})
-@RunWith(SpringJUnit4ClassRunner.class)
-public class TagDocumentIndexerTests {
+public class TagDocumentIndexerTests extends AbstractElasticsearchTest {
 
   @Autowired
   private TagDocumentIndexer indexer;
@@ -75,7 +66,6 @@ public class TagDocumentIndexerTests {
   @Autowired
   private TagDocumentConverter converter;
 
-  private String indexName;
   private TagDocument document;
 
   @Before
@@ -83,12 +73,6 @@ public class TagDocumentIndexerTests {
     DataTagCacheObject tag = (DataTagCacheObject) EntityUtils.createDataTag();
     document = converter.convert(tag).orElseThrow(() -> new IllegalArgumentException("TagDocument conversion failed"));
     indexName = indexNameManager.indexFor(document);
-  }
-
-  @After
-  public void tearDown() {
-    EmbeddedElasticsearchManager.getEmbeddedNode().deleteIndex(indexName);
-    EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
   }
 
   @Test
