@@ -16,9 +16,19 @@
  *****************************************************************************/
 package cern.c2mon.server.elasticsearch;
 
-import cern.c2mon.server.elasticsearch.config.BaseElasticsearchIntegrationTest;
+import cern.c2mon.server.cache.config.CacheModule;
+import cern.c2mon.server.cache.dbaccess.config.CacheDbAccessModule;
+import cern.c2mon.server.cache.loading.config.CacheLoadingModule;
+import cern.c2mon.server.common.config.CommonModule;
+import cern.c2mon.server.elasticsearch.config.ElasticsearchModule;
+import cern.c2mon.server.elasticsearch.junit.CachePopulationRule;
+import cern.c2mon.server.elasticsearch.util.EmbeddedElasticsearchManager;
+import cern.c2mon.server.supervision.config.SupervisionModule;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.IOException;
 import java.util.List;
@@ -29,11 +39,21 @@ import static org.junit.Assert.assertEquals;
  * @author Alban Marguet
  */
 @Slf4j
-public class ElasticsearchModuleIntegrationTest extends BaseElasticsearchIntegrationTest {
+@ContextConfiguration(classes = {
+        CommonModule.class,
+        CacheModule.class,
+        CacheDbAccessModule.class,
+        CacheLoadingModule.class,
+        SupervisionModule.class,
+        ElasticsearchModule.class,
+        CachePopulationRule.class
+})
+@RunWith(SpringJUnit4ClassRunner.class)
+public class ElasticsearchModuleIntegrationTest {
 
   @Test
   public void testModuleStartup() throws IOException {
-    List<String> indexData = getEmbeddedNode().fetchAllDocuments();
+    List<String> indexData = EmbeddedElasticsearchManager.getEmbeddedNode().fetchAllDocuments();
     assertEquals("Embedded node should not contain any documents before each test and start successfuly.",
             0, indexData.size());
   }

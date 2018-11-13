@@ -17,17 +17,29 @@
 
 package cern.c2mon.server.elasticsearch.tag.config;
 
+import cern.c2mon.server.cache.config.CacheModule;
+import cern.c2mon.server.cache.dbaccess.config.CacheDbAccessModule;
+import cern.c2mon.server.cache.loading.config.CacheLoadingModule;
+import cern.c2mon.server.common.config.CommonModule;
 import cern.c2mon.server.common.datatag.DataTagCacheObject;
+import cern.c2mon.server.elasticsearch.ElasticsearchSuiteTest;
 import cern.c2mon.server.elasticsearch.IndexManager;
 import cern.c2mon.server.elasticsearch.IndexNameManager;
-import cern.c2mon.server.elasticsearch.config.BaseElasticsearchIntegrationTest;
+import cern.c2mon.server.elasticsearch.config.ElasticsearchModule;
 import cern.c2mon.server.elasticsearch.junit.CachePopulationRule;
+import cern.c2mon.server.elasticsearch.util.EmbeddedElasticsearchManager;
 import cern.c2mon.server.elasticsearch.util.EntityUtils;
+import cern.c2mon.server.elasticsearch.util.IndexUtils;
+import cern.c2mon.server.supervision.config.SupervisionModule;
 import org.json.JSONObject;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.List;
 import java.util.Map;
@@ -39,7 +51,17 @@ import static org.junit.Assert.assertTrue;
  * @author Szymon Halastra
  * @author Justin Lewis Salmon
  */
-public class TagConfigDocumentIndexerTest extends BaseElasticsearchIntegrationTest {
+@ContextConfiguration(classes = {
+        CommonModule.class,
+        CacheModule.class,
+        CacheDbAccessModule.class,
+        CacheLoadingModule.class,
+        SupervisionModule.class,
+        ElasticsearchModule.class,
+        CachePopulationRule.class
+})
+@RunWith(SpringJUnit4ClassRunner.class)
+public class TagConfigDocumentIndexerTest {
 
   @Autowired
   private IndexNameManager indexNameManager;
@@ -57,6 +79,7 @@ public class TagConfigDocumentIndexerTest extends BaseElasticsearchIntegrationTe
   @Autowired
   public CachePopulationRule cachePopulationRule;
 
+  private String indexName;
   private DataTagCacheObject tag;
   private TagConfigDocument document;
 
@@ -67,15 +90,22 @@ public class TagConfigDocumentIndexerTest extends BaseElasticsearchIntegrationTe
     indexName = indexNameManager.indexFor(document);
   }
 
+  @After
+  public void tearDown() {
+    EmbeddedElasticsearchManager.getEmbeddedNode().deleteIndex(indexName);
+    EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
+  }
+
   @Test
   public void addDataTag() throws Exception {
     indexer.indexTagConfig(document);
 
-    getEmbeddedNode().refreshIndices();
+    EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
 
-    assertTrue("Index should have been created.", doesIndexExist(indexName));
+    assertTrue("Index should have been created.",
+            IndexUtils.doesIndexExist(indexName, ElasticsearchSuiteTest.getProperties()));
 
-    List<String> indexData = getEmbeddedNode().fetchAllDocuments(indexName);
+    List<String> indexData = EmbeddedElasticsearchManager.getEmbeddedNode().fetchAllDocuments(indexName);
     assertEquals("Index should have one document inserted.", 1, indexData.size());
   }
 
@@ -85,11 +115,12 @@ public class TagConfigDocumentIndexerTest extends BaseElasticsearchIntegrationTe
     ((Map<String, Object>) document.get("metadata")).put("spam", "eggs");
     indexer.updateTagConfig(document);
 
-    getEmbeddedNode().refreshIndices();
+    EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
 
-    assertTrue("Index should have been created when trying to update non-existing one.", doesIndexExist(indexName));
+    assertTrue("Index should have been created when trying to update non-existing one.",
+            IndexUtils.doesIndexExist(indexName, ElasticsearchSuiteTest.getProperties()));
 
-    List<String> indexData = getEmbeddedNode().fetchAllDocuments(indexName);
+    List<String> indexData = EmbeddedElasticsearchManager.getEmbeddedNode().fetchAllDocuments(indexName);
     assertEquals("Index should have one document inserted.", 1, indexData.size());
 
     JSONObject jsonObject = new JSONObject(indexData.get(0));
@@ -102,18 +133,19 @@ public class TagConfigDocumentIndexerTest extends BaseElasticsearchIntegrationTe
   public void removeDataTag() throws Exception {
     indexer.indexTagConfig(document);
 
-    getEmbeddedNode().refreshIndices();
+    EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
 
-    List<String> indexData = getEmbeddedNode().fetchAllDocuments(indexName);
+    List<String> indexData = EmbeddedElasticsearchManager.getEmbeddedNode().fetchAllDocuments(indexName);
     assertEquals("Index should have been created.", 1, indexData.size());
 
     indexer.removeTagConfigById(tag.getId());
 
-    getEmbeddedNode().refreshIndices();
+    EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
 
-    assertTrue("Index should exist after tag config deletion.", doesIndexExist(indexName));
+    assertTrue("Index should exist after tag config deletion.",
+            IndexUtils.doesIndexExist(indexName, ElasticsearchSuiteTest.getProperties()));
 
-    indexData = getEmbeddedNode().fetchAllDocuments(indexName);
+    indexData = EmbeddedElasticsearchManager.getEmbeddedNode().fetchAllDocuments(indexName);
     assertEquals("Index documents should been deleted.", 0, indexData.size());
   }
 }

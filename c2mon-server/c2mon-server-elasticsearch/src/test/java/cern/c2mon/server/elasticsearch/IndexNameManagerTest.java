@@ -1,22 +1,16 @@
 package cern.c2mon.server.elasticsearch;
 
-import cern.c2mon.server.elasticsearch.config.BaseElasticsearchIntegrationTest;
-import cern.c2mon.server.elasticsearch.config.ElasticsearchProperties;
 import cern.c2mon.server.elasticsearch.tag.TagDocument;
-import org.junit.Before;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.test.context.TestPropertySource;
 
 import static junit.framework.TestCase.assertEquals;
 
 /**
  * @author Justin Lewis Salmon
  */
-public class IndexNameManagerTest extends BaseElasticsearchIntegrationTest {
+public class IndexNameManagerTest {
 
-  private IndexNameManager indexNameManager = new IndexNameManager(getProperties());
+  private IndexNameManager indexNameManager = new IndexNameManager(ElasticsearchSuiteTest.getProperties());
 
   @Test
   public void monthlyIndex() {
