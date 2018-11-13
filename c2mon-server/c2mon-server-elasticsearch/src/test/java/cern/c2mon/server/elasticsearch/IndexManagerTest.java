@@ -188,7 +188,6 @@ public class IndexManagerTest extends BaseElasticsearchIntegrationTest {
         assertEquals("Updated document should have updated values.", UPDATED_NAME, jsonObject.getString("name"));
     }
 
-
     @Test
     public void updateNonExistingIndex() throws UnknownHostException {
         indexManager.update(indexName, TEST_JSON_2, "1");
@@ -198,10 +197,6 @@ public class IndexManagerTest extends BaseElasticsearchIntegrationTest {
         assertEquals("Index should be created if updating non-existing index.", 1,
                 getEmbeddedNode().fetchAllDocuments(indexName).size());
     }
-
-
-
-
 
     private String loadMapping(String source) throws IOException {
         return new BufferedReader(new InputStreamReader(new ClassPathResource(source).getInputStream()))

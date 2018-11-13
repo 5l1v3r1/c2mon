@@ -16,8 +16,7 @@ import static junit.framework.TestCase.assertEquals;
  */
 public class IndexNameManagerTest extends BaseElasticsearchIntegrationTest {
 
-  @Autowired
-  private IndexNameManager indexNameManager;
+  private IndexNameManager indexNameManager = new IndexNameManager(getProperties());
 
   @Test
   public void monthlyIndex() {
