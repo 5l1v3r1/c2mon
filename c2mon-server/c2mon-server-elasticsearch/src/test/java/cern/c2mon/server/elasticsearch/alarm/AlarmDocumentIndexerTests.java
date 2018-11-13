@@ -17,28 +17,17 @@
 package cern.c2mon.server.elasticsearch.alarm;
 
 import cern.c2mon.pmanager.persistence.exception.IDBPersistenceException;
-import cern.c2mon.server.cache.config.CacheModule;
-import cern.c2mon.server.cache.dbaccess.config.CacheDbAccessModule;
-import cern.c2mon.server.cache.loading.config.CacheLoadingModule;
 import cern.c2mon.server.common.alarm.AlarmCacheObject;
-import cern.c2mon.server.common.config.CommonModule;
-import cern.c2mon.server.elasticsearch.AbstractElasticsearchTest;
+import cern.c2mon.server.elasticsearch.ElasticsearchTestDefinition;
 import cern.c2mon.server.elasticsearch.ElasticsearchSuiteTest;
 import cern.c2mon.server.elasticsearch.IndexNameManager;
-import cern.c2mon.server.elasticsearch.config.ElasticsearchModule;
-import cern.c2mon.server.elasticsearch.junit.CachePopulationRule;
 import cern.c2mon.server.elasticsearch.util.EmbeddedElasticsearchManager;
 import cern.c2mon.server.elasticsearch.util.EntityUtils;
 import cern.c2mon.server.elasticsearch.util.IndexUtils;
-import cern.c2mon.server.supervision.config.SupervisionModule;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -50,7 +39,7 @@ import static junit.framework.TestCase.assertTrue;
  * @author Alban Marguet
  * @author Justin Lewis Salmon
  */
-public class AlarmDocumentIndexerTests extends AbstractElasticsearchTest {
+public class AlarmDocumentIndexerTests extends ElasticsearchTestDefinition {
 
   @Autowired
   private IndexNameManager indexNameManager;
