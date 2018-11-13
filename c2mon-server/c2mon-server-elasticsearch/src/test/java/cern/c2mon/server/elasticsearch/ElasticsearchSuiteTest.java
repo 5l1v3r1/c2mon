@@ -27,7 +27,7 @@ import org.junit.runners.Suite;
     TagConfigDocumentConverterTest.class,
     TagConfigDocumentIndexerTest.class
 })
-public class ElasticsearchTestSuite {
+public class ElasticsearchSuiteTest {
 
   @AfterClass
   public static void cleanup() {
