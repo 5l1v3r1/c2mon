@@ -32,8 +32,6 @@ public class ElasticsearchProperties {
    */
   private boolean enabled = true;
 
-  private boolean rest = false;
-
   /**
    * Host name or IP address pointing to the Elasticsearch cluster
    */

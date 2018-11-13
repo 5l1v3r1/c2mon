@@ -16,7 +16,6 @@
  *****************************************************************************/
 package cern.c2mon.server.elasticsearch.bulk;
 
-import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.index.IndexRequest;
 
 /**

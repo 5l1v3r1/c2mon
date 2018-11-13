@@ -86,15 +86,15 @@ public class ElasticsearchClientTransport implements ElasticsearchClient<Client>
         .put("cluster.name", properties.getClusterName())
         .put("http.enabled", properties.isHttpEnabled());
 
-    TransportClient client = new PreBuiltTransportClient(settingsBuilder.build());
+    TransportClient transportClient = new PreBuiltTransportClient(settingsBuilder.build());
     try {
-      client.addTransportAddress(new TransportAddress(InetAddress.getByName(properties.getHost()), properties.getPort()));
+      transportClient.addTransportAddress(new TransportAddress(InetAddress.getByName(properties.getHost()), properties.getPort()));
     } catch (UnknownHostException e) {
       log.error("Error connecting to the Elasticsearch cluster at {}:{}", properties.getHost(), properties.getPort(), e);
       return null;
     }
 
-    return client;
+    return transportClient;
   }
 
   /**
@@ -118,17 +118,14 @@ public class ElasticsearchClientTransport implements ElasticsearchClient<Client>
           while (true) {
             log.info("Waiting for yellow status of Elasticsearch cluster...");
 
-            try {
-              if (isClusterYellow()) {
-                break;
-              }
-            } catch (Exception e) {
-              log.info("Elasticsearch cluster not yet ready: {}", e.getMessage());
+            if (isClusterYellow()) {
+              break;
             }
 
             try {
               Thread.sleep(100L);
-            } catch (InterruptedException ignored) {
+            } catch (InterruptedException e) {
+              log.debug("Waiting for yellow status interrupted", e);
             }
           }
           log.info("Elasticsearch cluster is yellow");
@@ -149,8 +146,13 @@ public class ElasticsearchClientTransport implements ElasticsearchClient<Client>
   }
 
   public boolean isClusterYellow() {
-    ClusterHealthStatus status = getClusterHealth().getStatus();
-    return status.equals(ClusterHealthStatus.YELLOW) || status.equals(ClusterHealthStatus.GREEN);
+    try {
+      ClusterHealthStatus status = getClusterHealth().getStatus();
+      return status.equals(ClusterHealthStatus.YELLOW) || status.equals(ClusterHealthStatus.GREEN);
+    } catch (Exception e) {
+      log.info("Elasticsearch cluster not yet ready: {}", e);
+    }
+    return false;
   }
 
   @Override

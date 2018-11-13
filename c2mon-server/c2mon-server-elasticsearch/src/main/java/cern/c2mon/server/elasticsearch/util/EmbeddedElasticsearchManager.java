@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
  * @author Serhiy Boychenko
  */
 @Slf4j
-public class EmbeddedElasticsearchManager {
+public final class EmbeddedElasticsearchManager {
 
     private static EmbeddedElastic embeddedNode;
 
@@ -57,7 +57,6 @@ public class EmbeddedElasticsearchManager {
         synchronized (EmbeddedElasticsearchManager.class) {
             if (embeddedNode != null) {
                 embeddedNode.stop();
-                embeddedNode = null;
             }
         }
     }
