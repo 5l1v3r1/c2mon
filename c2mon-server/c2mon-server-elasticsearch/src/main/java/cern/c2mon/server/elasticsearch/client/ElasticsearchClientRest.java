@@ -27,7 +27,7 @@ import java.io.IOException;
 @Slf4j
 @Component
 @ConditionalOnProperty(name = "c2mon.server.elasticsearch.rest", havingValue="true")
-public class ElasticsearchClientRest implements ElasticsearchClient<RestHighLevelClient> {
+public final class ElasticsearchClientRest implements ElasticsearchClient<RestHighLevelClient> {
     @Getter
     private ElasticsearchProperties properties;
 

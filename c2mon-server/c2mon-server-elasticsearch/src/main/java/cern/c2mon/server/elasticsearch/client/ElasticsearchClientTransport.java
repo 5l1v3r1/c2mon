@@ -56,7 +56,7 @@ import java.util.concurrent.TimeoutException;
 @Slf4j
 @Component
 @ConditionalOnProperty(name = "c2mon.server.elasticsearch.rest", havingValue="false")
-public class ElasticsearchClientTransport implements ElasticsearchClient<Client> {
+public final class ElasticsearchClientTransport implements ElasticsearchClient<Client> {
 
   @Getter
   private ElasticsearchProperties properties;
@@ -101,7 +101,7 @@ public class ElasticsearchClientTransport implements ElasticsearchClient<Client>
   /**
    * Connect to the cluster in a separate thread.
    */
-  private final void connectAsynchronously() {
+  private void connectAsynchronously() {
     log.info("Trying to connect to Elasticsearch cluster {} at {}:{}",
         properties.getClusterName(), properties.getHost(), properties.getPort());
 
@@ -113,7 +113,7 @@ public class ElasticsearchClientTransport implements ElasticsearchClient<Client>
   }
 
   @Override
-  public final void waitForYellowStatus() {
+  public void waitForYellowStatus() {
     try {
       CompletableFuture<Void> nodeReady = CompletableFuture.runAsync(() -> {
           while (true) {
