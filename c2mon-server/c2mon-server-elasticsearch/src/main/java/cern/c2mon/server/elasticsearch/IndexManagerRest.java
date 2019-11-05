@@ -55,13 +55,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @ConditionalOnProperty(name = "c2mon.server.elasticsearch.rest", havingValue = "true")
 public class IndexManagerRest implements IndexManager {
 
-  /**
-   * Type is being removed in Elasticsearch 6.x (check
-   * <a href="https://www.elastic.co/guide/en/elasticsearch/reference/master/removal-of-types.html">Elasticsearch
-   * documentation</a> for more details).
-   */
-  private static final String TYPE = "_doc";
-
   private final List<String> indexCache = new CopyOnWriteArrayList<>();
 
   private ElasticsearchProperties properties;

@@ -24,6 +24,13 @@ package cern.c2mon.server.elasticsearch;
 public interface IndexManager {
 
   /**
+   * Type is being removed in Elasticsearch 6.x (check
+   * <a href="https://www.elastic.co/guide/en/elasticsearch/reference/master/removal-of-types.html">Elasticsearch
+   * documentation</a> for more details).
+   */
+  String TYPE = "_doc";
+
+  /**
    * Create a new index with an initial mapping.
    *
    * @param indexName the name of the index to create.
