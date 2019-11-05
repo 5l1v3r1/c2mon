@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2010-2016 CERN. All rights not expressly granted are reserved.
+ * Copyright (C) 2010-2019 CERN. All rights not expressly granted are reserved.
  *
  * This file is part of the CERN Control and Monitoring Platform 'C2MON'.
  * C2MON is free software: you can redistribute it and/or modify it under the
@@ -16,9 +16,13 @@
  *****************************************************************************/
 package cern.c2mon.server.elasticsearch.supervision;
 
-import javax.annotation.PostConstruct;
-
+import cern.c2mon.pmanager.persistence.IPersistenceManager;
+import cern.c2mon.server.common.component.Lifecycle;
+import cern.c2mon.server.common.config.ServerConstants;
 import cern.c2mon.server.elasticsearch.client.ElasticsearchClient;
+import cern.c2mon.server.supervision.SupervisionListener;
+import cern.c2mon.server.supervision.SupervisionNotifier;
+import cern.c2mon.shared.client.supervision.SupervisionEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -27,13 +31,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
-import cern.c2mon.pmanager.persistence.IPersistenceManager;
-import cern.c2mon.server.common.component.Lifecycle;
-import cern.c2mon.server.common.config.ServerConstants;
-import cern.c2mon.server.supervision.SupervisionListener;
-import cern.c2mon.server.supervision.SupervisionNotifier;
-import cern.c2mon.shared.client.supervision.SupervisionEvent;
 
 /**
  * Listens for {@link SupervisionEvent} updates and converts them to
@@ -76,7 +73,7 @@ public class SupervisionEventDocumentListener implements SupervisionListener, Sm
     }
 
     log.debug("Indexing supervision event {} for entity {} (#{})",
-        supervisionEvent.getStatus(), supervisionEvent.getEntity(), supervisionEvent.getEntityId());
+            supervisionEvent.getStatus(), supervisionEvent.getEntity(), supervisionEvent.getEntityId());
 
     persistenceManager.storeData(converter.convert(supervisionEvent));
   }
@@ -100,18 +97,18 @@ public class SupervisionEventDocumentListener implements SupervisionListener, Sm
   @Override
   public void start() {
     if (this.elasticsearchClient.getProperties().isEnabled()) {
-        running = true;
-        listenerContainer.start();
+      running = true;
+      listenerContainer.start();
     }
   }
 
   @Override
   public void stop() {
     if (this.elasticsearchClient.getProperties().isEnabled()) {
-        listenerContainer.stop();
-        running = false;
+      listenerContainer.stop();
+      running = false;
     }
-    
+
   }
 
   @Override

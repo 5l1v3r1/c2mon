@@ -14,40 +14,20 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with C2MON. If not, see <http://www.gnu.org/licenses/>.
  *****************************************************************************/
-package cern.c2mon.server.elasticsearch.client;
-
-import cern.c2mon.server.elasticsearch.config.ElasticsearchProperties;
+package cern.c2mon.server.elasticsearch.exception;
 
 /**
- * Defines an interface for Elasticsearch client-cluster communication.
+ * An exception to be thrown when an error processing ES entity occurs
  *
- * @param <T> type of the client to communicate with Elasticsearch cluster.
  * @author Serhiy Boychenko
  */
-public interface ElasticsearchClient<T> {
+public class ProcessingException extends RuntimeException {
 
   /**
-   * Block and wait for the cluster to become yellow.
+   * @param message to be associated with the exception
+   * @param cause   excetion cause
    */
-  void waitForYellowStatus();
-
-  /**
-   * Closes client connection.
-   */
-  void close();
-
-  /**
-   * @return properties used by client to communicate with Elasticsearch cluster.
-   */
-  ElasticsearchProperties getProperties();
-
-  /**
-   * @return client used to communicate with Elasticsearch cluster.
-   */
-  T getClient();
-
-  /**
-   * @return true if Elasticsearch cluster is healthy.
-   */
-  boolean isClusterYellow();
+  public ProcessingException(String message, Throwable cause) {
+    super(message, cause);
+  }
 }

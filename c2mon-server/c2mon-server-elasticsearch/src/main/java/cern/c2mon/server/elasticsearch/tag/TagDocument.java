@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2010-2016 CERN. All rights not expressly granted are reserved.
+ * Copyright (C) 2010-2019 CERN. All rights not expressly granted are reserved.
  *
  * This file is part of the CERN Control and Monitoring Platform 'C2MON'.
  * C2MON is free software: you can redistribute it and/or modify it under the
@@ -19,6 +19,7 @@ package cern.c2mon.server.elasticsearch.tag;
 import java.io.IOException;
 import java.util.HashMap;
 
+import cern.c2mon.server.elasticsearch.exception.ProcessingException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -59,7 +60,7 @@ public class TagDocument extends HashMap<String, Object> implements IFallback {
     try {
       return mapper.readValue(line, TagDocument.class);
     } catch (IOException e) {
-      throw new RuntimeException("Error reading line from fallback", e);
+      throw new ProcessingException("Error reading line from fallback", e);
     }
   }
 
@@ -68,7 +69,7 @@ public class TagDocument extends HashMap<String, Object> implements IFallback {
     try {
       return mapper.writeValueAsString(this);
     } catch (JsonProcessingException e) {
-      throw new RuntimeException("Error serializing document", e);
+      throw new ProcessingException("Error serializing document", e);
     }
   }
 }

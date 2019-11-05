@@ -1,3 +1,19 @@
+/******************************************************************************
+ * Copyright (C) 2010-2019 CERN. All rights not expressly granted are reserved.
+ *
+ * This file is part of the CERN Control and Monitoring Platform 'C2MON'.
+ * C2MON is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation, either version 3 of the license.
+ *
+ * C2MON is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with C2MON. If not, see <http://www.gnu.org/licenses/>.
+ *****************************************************************************/
 package cern.c2mon.server.elasticsearch;
 
 import cern.c2mon.server.elasticsearch.client.ElasticsearchClientRest;
@@ -31,186 +47,188 @@ import static org.junit.Assert.assertTrue;
  */
 @RunWith(Parameterized.class)
 public class IndexManagerTests {
-    private static final String NAME = "Test Name";
-    private static final String UPDATED_NAME = NAME + " Updated";
-    private static final String TEST_JSON = "{\"id\":\"1000\",\"name\":\"" + NAME + "\", \"description\":\"Test description\"}";
-    private static final String TEST_JSON_2 = "{\"id\":\"1000\",\"name\":\"" + UPDATED_NAME + "\", \"description\":\"Test description\"}";
+  private static final String MAPPINGS_FILE = "mappings/test.json";
 
-    /**
-     * Parameters setup. Must include an instance of each of the {@link IndexManager} implementations.
-     *
-     * @return list of instances of each of the {@link IndexManager} implementations.
-     * @throws NodeValidationException
-     */
-    @Parameters
-    public static Collection<IndexManager> getIndexManagerClass() throws NodeValidationException {
-        return Arrays.asList(
-                new IndexManagerRest(new ElasticsearchClientRest(ElasticsearchSuiteTest.getProperties())),
-                new IndexManagerTransport(new ElasticsearchClientTransport(ElasticsearchSuiteTest.getProperties())));
+  private static final String NAME = "Test Name";
+  private static final String UPDATED_NAME = NAME + " Updated";
+  private static final String TEST_JSON = "{\"id\":\"1000\",\"name\":\"" + NAME + "\", \"description\":\"Test description\"}";
+  private static final String TEST_JSON_2 = "{\"id\":\"1000\",\"name\":\"" + UPDATED_NAME + "\", \"description\":\"Test description\"}";
+
+  /**
+   * Parameters setup. Must include an instance of each of the {@link IndexManager} implementations.
+   *
+   * @return list of instances of each of the {@link IndexManager} implementations.
+   * @throws NodeValidationException
+   */
+  @Parameters
+  public static Collection<IndexManager> getIndexManagerClass() throws NodeValidationException {
+    return Arrays.asList(
+            new IndexManagerRest(new ElasticsearchClientRest(ElasticsearchSuiteTest.getProperties())),
+            new IndexManagerTransport(new ElasticsearchClientTransport(ElasticsearchSuiteTest.getProperties())));
+  }
+
+  private String indexName;
+  private IndexManager indexManager;
+
+  /**
+   * Constructor for injecting parameters.
+   *
+   * @param indexManager instance for current test set execution.
+   */
+  public IndexManagerTests(IndexManager indexManager) {
+    this.indexManager = indexManager;
+  }
+
+  @Before
+  public void setUp() {
+    indexName = "test_index";
+
+    if (indexManager != null) {
+      indexManager.purgeIndexCache();
     }
+  }
 
-    private String indexName;
-    private IndexManager indexManager;
+  @After
+  public void tearDown() {
+    EmbeddedElasticsearchManager.getEmbeddedNode().deleteIndex(indexName);
+    EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
+  }
 
-    /**
-     * Constructor for injecting parameters.
-     *
-     * @param indexManager instance for current test set execution.
-     */
-    public IndexManagerTests(IndexManager indexManager) {
-        this.indexManager = indexManager;
-    }
+  @Test
+  public void createTest() throws NodeValidationException, IOException {
+    String mapping = loadMapping(MAPPINGS_FILE);
 
-    @Before
-    public void setUp() {
-        indexName = "test_index";
+    indexManager.create(indexName, mapping);
 
-        if (indexManager != null) {
-            indexManager.purgeIndexCache();
-        }
-    }
+    assertTrue("Index should have been created.",
+            IndexUtils.doesIndexExist(indexName, ElasticsearchSuiteTest.getProperties()));
+  }
 
-    @After
-    public void tearDown() {
-        EmbeddedElasticsearchManager.getEmbeddedNode().deleteIndex(indexName);
-        EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
-    }
+  @Test
+  public void indexTestWithoutId() throws NodeValidationException, IOException {
+    String mapping = loadMapping(MAPPINGS_FILE);
 
-    @Test
-    public void createTest() throws NodeValidationException, IOException {
-        String mapping = loadMapping("mappings/test.json");
+    indexManager.create(indexName, mapping);
 
-        indexManager.create(indexName, mapping);
+    EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
 
-        assertTrue("Index should have been created.",
-                IndexUtils.doesIndexExist(indexName, ElasticsearchSuiteTest.getProperties()));
-    }
+    indexManager.index(indexName, TEST_JSON, "1");
 
-    @Test
-    public void indexTestWithoutId() throws NodeValidationException, IOException {
-        String mapping = loadMapping("mappings/test.json");
+    EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
 
-        indexManager.create(indexName, mapping);
+    assertEquals("Index should have one document inserted.", 1,
+            EmbeddedElasticsearchManager.getEmbeddedNode().fetchAllDocuments(indexName).size());
+  }
 
-        EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
+  @Test
+  public void indexTestWithId() throws NodeValidationException, IOException {
+    String mapping = loadMapping(MAPPINGS_FILE);
 
-        indexManager.index(indexName, TEST_JSON,"1");
+    indexManager.create(indexName, mapping);
 
-        EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
+    EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
 
-        assertEquals("Index should have one document inserted.", 1,
-                EmbeddedElasticsearchManager.getEmbeddedNode().fetchAllDocuments(indexName).size());
-    }
+    indexManager.index(indexName, TEST_JSON, "1", "1");
 
-    @Test
-    public void indexTestWithId() throws NodeValidationException, IOException {
-        String mapping = loadMapping("mappings/test.json");
+    EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
 
-        indexManager.create(indexName, mapping);
+    assertEquals("Index should have one document inserted.", 1,
+            EmbeddedElasticsearchManager.getEmbeddedNode().fetchAllDocuments(indexName).size());
+  }
 
-        EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
+  @Test
+  public void existsTestWithoutRouting() throws NodeValidationException, IOException {
+    String mapping = loadMapping(MAPPINGS_FILE);
 
-        indexManager.index(indexName, TEST_JSON,"1", "1");
+    indexManager.create(indexName, mapping);
 
-        EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
+    EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
 
-        assertEquals("Index should have one document inserted.", 1,
-                EmbeddedElasticsearchManager.getEmbeddedNode().fetchAllDocuments(indexName).size());
-    }
+    assertTrue("'exists()' method should report index as exiting.", indexManager.exists(indexName));
+  }
 
-    @Test
-    public void existsTestWithoutRouting() throws NodeValidationException, IOException {
-        String mapping = loadMapping("mappings/test.json");
+  @Test
+  public void existsTestWithCachePurging() throws NodeValidationException, IOException {
+    String mapping = loadMapping(MAPPINGS_FILE);
 
-        indexManager.create(indexName, mapping);
+    indexManager.create(indexName, mapping);
 
-        EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
+    EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
 
-        assertTrue("'exists()' method should report index as exiting.", indexManager.exists(indexName));
-    }
+    indexManager.purgeIndexCache();
 
-    @Test
-    public void existsTestWithCachePurging() throws NodeValidationException, IOException {
-        String mapping = loadMapping("mappings/test.json");
+    assertTrue("'exists()' method should check index existence on the server once cache is purged.",
+            indexManager.exists(indexName));
+  }
 
-        indexManager.create(indexName, mapping);
+  @Test
+  public void existsTestWithRouting() throws NodeValidationException, IOException {
+    String mapping = loadMapping(MAPPINGS_FILE);
 
-        EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
+    indexManager.create(indexName, mapping);
 
-        indexManager.purgeIndexCache();
+    EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
 
-        assertTrue("'exists()' method should check index existence on the server once cache is purged.",
-                indexManager.exists(indexName));
-    }
+    assertTrue("'exists()' method should report index as exiting.",
+            indexManager.exists(indexName, "1"));
+  }
 
-    @Test
-    public void existsTestWithRouting() throws NodeValidationException, IOException {
-        String mapping = loadMapping("mappings/test.json");
+  @Test
+  public void updateExistingIndexNonExistingDocument() throws IOException {
+    String mapping = loadMapping(MAPPINGS_FILE);
 
-        indexManager.create(indexName, mapping);
+    indexManager.create(indexName, mapping);
 
-        EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
+    EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
 
-        assertTrue("'exists()' method should report index as exiting.",
-                indexManager.exists(indexName, "1"));
-    }
+    indexManager.update(indexName, TEST_JSON_2, "1");
 
-    @Test
-    public void updateExistingIndexNonExistingDocument() throws IOException {
-        String mapping = loadMapping("mappings/test.json");
+    EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
 
-        indexManager.create(indexName, mapping);
+    List<String> indexData = EmbeddedElasticsearchManager.getEmbeddedNode().fetchAllDocuments(indexName);
+    assertEquals("Upsert should create document which does not exist.", 1, indexData.size());
 
-        EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
+    JSONObject jsonObject = new JSONObject(indexData.get(0));
 
-        indexManager.update(indexName, TEST_JSON_2, "1");
+    assertEquals("Updated document should have updated values.", UPDATED_NAME, jsonObject.getString("name"));
+  }
 
-        EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
+  @Test
+  public void updateExistingIndexExistingDocument() throws IOException {
+    String mapping = loadMapping(MAPPINGS_FILE);
 
-        List<String> indexData = EmbeddedElasticsearchManager.getEmbeddedNode().fetchAllDocuments(indexName);
-        assertEquals("Upsert should create document which does not exist.", 1, indexData.size());
+    indexManager.create(indexName, mapping);
 
-        JSONObject jsonObject = new JSONObject(indexData.get(0));
+    EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
 
-        assertEquals("Updated document should have updated values.", UPDATED_NAME, jsonObject.getString("name"));
-    }
+    indexManager.index(indexName, TEST_JSON, "1", "1");
 
-    @Test
-    public void updateExistingIndexExistingDocument() throws IOException {
-        String mapping = loadMapping("mappings/test.json");
+    EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
 
-        indexManager.create(indexName, mapping);
+    indexManager.update(indexName, TEST_JSON_2, "1");
 
-        EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
+    EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
 
-        indexManager.index(indexName, TEST_JSON, "1", "1");
+    List<String> indexData = EmbeddedElasticsearchManager.getEmbeddedNode().fetchAllDocuments(indexName);
 
-        EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
+    JSONObject jsonObject = new JSONObject(indexData.get(0));
 
-        indexManager.update(indexName, TEST_JSON_2, "1");
+    assertEquals("Updated document should have updated values.", UPDATED_NAME, jsonObject.getString("name"));
+  }
 
-        EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
+  @Test
+  public void updateNonExistingIndex() throws UnknownHostException {
+    indexManager.update(indexName, TEST_JSON_2, "1");
 
-        List<String> indexData = EmbeddedElasticsearchManager.getEmbeddedNode().fetchAllDocuments(indexName);
+    EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
 
-        JSONObject jsonObject = new JSONObject(indexData.get(0));
+    assertEquals("Index should be created if updating non-existing index.", 1,
+            EmbeddedElasticsearchManager.getEmbeddedNode().fetchAllDocuments(indexName).size());
+  }
 
-        assertEquals("Updated document should have updated values.", UPDATED_NAME, jsonObject.getString("name"));
-    }
-
-    @Test
-    public void updateNonExistingIndex() throws UnknownHostException {
-        indexManager.update(indexName, TEST_JSON_2, "1");
-
-        EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
-
-        assertEquals("Index should be created if updating non-existing index.", 1,
-                EmbeddedElasticsearchManager.getEmbeddedNode().fetchAllDocuments(indexName).size());
-    }
-
-    private String loadMapping(String source) throws IOException {
-        return new BufferedReader(new InputStreamReader(new ClassPathResource(source).getInputStream()))
-                .lines()
-                .collect(Collectors.joining(""));
-    }
+  private String loadMapping(String source) throws IOException {
+    return new BufferedReader(new InputStreamReader(new ClassPathResource(source).getInputStream()))
+            .lines()
+            .collect(Collectors.joining(""));
+  }
 }

@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2010-2016 CERN. All rights not expressly granted are reserved.
+ * Copyright (C) 2010-2019 CERN. All rights not expressly granted are reserved.
  *
  * This file is part of the CERN Control and Monitoring Platform 'C2MON'.
  * C2MON is free software: you can redistribute it and/or modify it under the
@@ -40,14 +40,14 @@ import static org.mockito.Mockito.when;
  * @author Justin Lewis Salmon
  */
 @RunWith(MockitoJUnitRunner.class)
-public class TagDocumentConverterTests extends BaseTagDocumentConverterTest{
+public class TagDocumentConverterTests extends BaseTagDocumentConverterTest {
 
   @InjectMocks
   private TagDocumentConverter converter;
 
   @Before
   public void setup() {
-     ProcessCacheObject process = new ProcessCacheObject(1L);
+    ProcessCacheObject process = new ProcessCacheObject(1L);
     process.setName("P_TEST");
 
     EquipmentCacheObject equipment = new EquipmentCacheObject(1L);

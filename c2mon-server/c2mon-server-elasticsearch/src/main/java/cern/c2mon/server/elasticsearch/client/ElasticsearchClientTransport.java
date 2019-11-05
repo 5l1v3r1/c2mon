@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2010-2017 CERN. All rights not expressly granted are reserved.
+ * Copyright (C) 2010-2019 CERN. All rights not expressly granted are reserved.
  *
  * This file is part of the CERN Control and Monitoring Platform 'C2MON'.
  * C2MON is free software: you can redistribute it and/or modify it under the
@@ -27,10 +27,6 @@ import org.elasticsearch.cluster.health.ClusterHealthStatus;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.TransportAddress;
 import org.elasticsearch.common.unit.TimeValue;
-import org.elasticsearch.node.InternalSettingsPreparer;
-import org.elasticsearch.node.Node;
-import org.elasticsearch.node.NodeValidationException;
-import org.elasticsearch.plugins.Plugin;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -38,7 +34,6 @@ import org.springframework.stereotype.Component;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -55,7 +50,7 @@ import java.util.concurrent.TimeoutException;
  */
 @Slf4j
 @Component
-@ConditionalOnProperty(name = "c2mon.server.elasticsearch.rest", havingValue="false")
+@ConditionalOnProperty(name = "c2mon.server.elasticsearch.rest", havingValue = "false")
 public final class ElasticsearchClientTransport implements ElasticsearchClient<Client> {
 
   @Getter
@@ -84,18 +79,16 @@ public final class ElasticsearchClientTransport implements ElasticsearchClient<C
     final Settings.Builder settingsBuilder = Settings.builder();
 
     settingsBuilder.put("node.name", properties.getNodeName())
-        .put("cluster.name", properties.getClusterName())
-        .put("http.enabled", properties.isHttpEnabled());
+            .put("cluster.name", properties.getClusterName())
+            .put("http.enabled", properties.isHttpEnabled());
 
-    TransportClient transportClient = new PreBuiltTransportClient(settingsBuilder.build());
-    try {
+    try (TransportClient transportClient = new PreBuiltTransportClient(settingsBuilder.build())) {
       transportClient.addTransportAddress(new TransportAddress(InetAddress.getByName(properties.getHost()), properties.getPort()));
+      return transportClient;
     } catch (UnknownHostException e) {
       log.error("Error connecting to the Elasticsearch cluster at {}:{}", properties.getHost(), properties.getPort(), e);
       return null;
     }
-
-    return transportClient;
   }
 
   /**
@@ -103,7 +96,7 @@ public final class ElasticsearchClientTransport implements ElasticsearchClient<C
    */
   private void connectAsynchronously() {
     log.info("Trying to connect to Elasticsearch cluster {} at {}:{}",
-        properties.getClusterName(), properties.getHost(), properties.getPort());
+            properties.getClusterName(), properties.getHost(), properties.getPort());
 
     new Thread(() -> {
       log.info("Connected to Elasticsearch cluster {}", properties.getClusterName());
@@ -113,20 +106,21 @@ public final class ElasticsearchClientTransport implements ElasticsearchClient<C
   }
 
   @Override
+  @SuppressWarnings("squid:S2142")
   public void waitForYellowStatus() {
     try {
       CompletableFuture<Void> nodeReady = CompletableFuture.runAsync(() -> {
-          while (true) {
-            log.info("Waiting for yellow status of Elasticsearch cluster...");
+                while (true) {
+                  log.info("Waiting for yellow status of Elasticsearch cluster...");
 
-            if (isClusterYellow()) {
-              break;
-            }
+                  if (isClusterYellow()) {
+                    break;
+                  }
 
-            sleep(100L);
-          }
-          log.info("Elasticsearch cluster is yellow");
-        }
+                  sleep(100L);
+                }
+                log.info("Elasticsearch cluster is yellow");
+              }
       );
       nodeReady.get(120, TimeUnit.SECONDS);
     } catch (InterruptedException | ExecutionException | TimeoutException e) {
@@ -135,6 +129,7 @@ public final class ElasticsearchClientTransport implements ElasticsearchClient<C
     }
   }
 
+  @SuppressWarnings("squid:S2142")
   private void sleep(long time) {
     try {
       Thread.sleep(time);
@@ -145,9 +140,9 @@ public final class ElasticsearchClientTransport implements ElasticsearchClient<C
 
   private ClusterHealthResponse getClusterHealth() {
     return client.admin().cluster().prepareHealth()
-        .setWaitForYellowStatus()
-        .setTimeout(TimeValue.timeValueMillis(100))
-        .get();
+            .setWaitForYellowStatus()
+            .setTimeout(TimeValue.timeValueMillis(100))
+            .get();
   }
 
   public boolean isClusterYellow() {

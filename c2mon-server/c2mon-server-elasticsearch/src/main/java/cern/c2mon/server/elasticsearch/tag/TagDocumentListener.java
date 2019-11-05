@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2010-2016 CERN. All rights not expressly granted are reserved.
+ * Copyright (C) 2010-2019 CERN. All rights not expressly granted are reserved.
  *
  * This file is part of the CERN Control and Monitoring Platform 'C2MON'.
  * C2MON is free software: you can redistribute it and/or modify it under the
@@ -16,14 +16,12 @@
  *****************************************************************************/
 package cern.c2mon.server.elasticsearch.tag;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import javax.annotation.PostConstruct;
-
+import cern.c2mon.pmanager.persistence.IPersistenceManager;
+import cern.c2mon.server.cache.C2monBufferedCacheListener;
+import cern.c2mon.server.cache.CacheRegistrationService;
+import cern.c2mon.server.common.component.Lifecycle;
+import cern.c2mon.server.common.config.ServerConstants;
+import cern.c2mon.server.common.tag.Tag;
 import cern.c2mon.server.elasticsearch.client.ElasticsearchClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,12 +29,11 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.stereotype.Component;
 
-import cern.c2mon.pmanager.persistence.IPersistenceManager;
-import cern.c2mon.server.cache.C2monBufferedCacheListener;
-import cern.c2mon.server.cache.CacheRegistrationService;
-import cern.c2mon.server.common.component.Lifecycle;
-import cern.c2mon.server.common.config.ServerConstants;
-import cern.c2mon.server.common.tag.Tag;
+import javax.annotation.PostConstruct;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Listens for {@link Tag} updates and converts them to {@link TagDocument}
@@ -82,21 +79,23 @@ public class TagDocumentListener implements C2monBufferedCacheListener<Tag>, Sma
     }
 
     Collection<Tag> loggables = tags.stream()
-        .filter(Tag::isLogged)
-        .collect(Collectors.toList());
+            .filter(Tag::isLogged)
+            .collect(Collectors.toList());
     log.debug("About to log {} tags", loggables.size());
 
     List<TagDocument> tagDocuments = loggables.stream()
-        .map(tag -> converter.convert(tag))
-        .filter(Optional::isPresent)
-        .map(Optional::get)
-        .collect(Collectors.toList());
+            .map(tag -> converter.convert(tag))
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .collect(Collectors.toList());
 
     persistenceManager.storeData(tagDocuments);
   }
 
   @Override
-  public void confirmStatus(Collection<Tag> tagCollection) {}
+  public void confirmStatus(Collection<Tag> tagCollection) {
+    // logic not required
+  }
 
   @Override
   public String getThreadName() {
@@ -122,18 +121,18 @@ public class TagDocumentListener implements C2monBufferedCacheListener<Tag>, Sma
   @Override
   public void start() {
     if (this.elasticsearchClient.getProperties().isEnabled()) {
-        running = true;
-        listenerContainer.start();
+      running = true;
+      listenerContainer.start();
     }
   }
 
   @Override
   public void stop() {
     if (this.elasticsearchClient.getProperties().isEnabled()) {
-        listenerContainer.stop();
-        running = false;
+      listenerContainer.stop();
+      running = false;
     }
-    
+
   }
 
   @Override

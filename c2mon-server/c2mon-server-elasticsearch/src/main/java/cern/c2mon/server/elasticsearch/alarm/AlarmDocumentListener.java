@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2010-2016 CERN. All rights not expressly granted are reserved.
+ * Copyright (C) 2010-2019 CERN. All rights not expressly granted are reserved.
  *
  * This file is part of the CERN Control and Monitoring Platform 'C2MON'.
  * C2MON is free software: you can redistribute it and/or modify it under the
@@ -43,8 +43,6 @@ public class AlarmDocumentListener implements C2monCacheListener<Alarm>, SmartLi
 
   private final ElasticsearchClient elasticsearchClient;
 
-  private final CacheRegistrationService cacheRegistrationService;
-
   @Qualifier("alarmDocumentPersistenceManager")
   private final IPersistenceManager<AlarmDocument> persistenceManager;
 
@@ -57,7 +55,6 @@ public class AlarmDocumentListener implements C2monCacheListener<Alarm>, SmartLi
   @Autowired
   public AlarmDocumentListener(final ElasticsearchClient elasticsearchClient, final CacheRegistrationService cacheRegistrationService, final IPersistenceManager<AlarmDocument> persistenceManager, final AlarmValueDocumentConverter converter) {
     this.elasticsearchClient = elasticsearchClient;
-    this.cacheRegistrationService = cacheRegistrationService;
     this.persistenceManager = persistenceManager;
     this.converter = converter;
     if (this.elasticsearchClient.getProperties().isEnabled()) {
@@ -76,7 +73,9 @@ public class AlarmDocumentListener implements C2monCacheListener<Alarm>, SmartLi
   }
 
   @Override
-  public void confirmStatus(Alarm alarm) {}
+  public void confirmStatus(Alarm alarm) {
+    // logic not required
+  }
 
   @Override
   public boolean isAutoStartup() {
@@ -108,7 +107,7 @@ public class AlarmDocumentListener implements C2monCacheListener<Alarm>, SmartLi
         listenerContainer.stop();
         running = false;
     }
-    
+
   }
 
   @Override
