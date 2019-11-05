@@ -58,10 +58,9 @@ public class IndexManagerTests {
    * Parameters setup. Must include an instance of each of the {@link IndexManager} implementations.
    *
    * @return list of instances of each of the {@link IndexManager} implementations.
-   * @throws NodeValidationException
    */
   @Parameters
-  public static Collection<IndexManager> getIndexManagerClass() throws NodeValidationException {
+  public static Collection<IndexManager> getIndexManagerClass() {
     return Arrays.asList(
             new IndexManagerRest(new ElasticsearchClientRest(ElasticsearchSuiteTest.getProperties())),
             new IndexManagerTransport(new ElasticsearchClientTransport(ElasticsearchSuiteTest.getProperties())));
@@ -95,7 +94,7 @@ public class IndexManagerTests {
   }
 
   @Test
-  public void createTest() throws NodeValidationException, IOException {
+  public void createTest() throws IOException {
     String mapping = loadMapping(MAPPINGS_FILE);
 
     indexManager.create(indexName, mapping);
@@ -105,7 +104,7 @@ public class IndexManagerTests {
   }
 
   @Test
-  public void indexTestWithoutId() throws NodeValidationException, IOException {
+  public void indexTestWithoutId() throws IOException {
     String mapping = loadMapping(MAPPINGS_FILE);
 
     indexManager.create(indexName, mapping);
@@ -121,7 +120,7 @@ public class IndexManagerTests {
   }
 
   @Test
-  public void indexTestWithId() throws NodeValidationException, IOException {
+  public void indexTestWithId() throws IOException {
     String mapping = loadMapping(MAPPINGS_FILE);
 
     indexManager.create(indexName, mapping);
@@ -137,7 +136,7 @@ public class IndexManagerTests {
   }
 
   @Test
-  public void existsTestWithoutRouting() throws NodeValidationException, IOException {
+  public void existsTestWithoutRouting() throws IOException {
     String mapping = loadMapping(MAPPINGS_FILE);
 
     indexManager.create(indexName, mapping);
@@ -148,7 +147,7 @@ public class IndexManagerTests {
   }
 
   @Test
-  public void existsTestWithCachePurging() throws NodeValidationException, IOException {
+  public void existsTestWithCachePurging() throws IOException {
     String mapping = loadMapping(MAPPINGS_FILE);
 
     indexManager.create(indexName, mapping);
@@ -162,7 +161,7 @@ public class IndexManagerTests {
   }
 
   @Test
-  public void existsTestWithRouting() throws NodeValidationException, IOException {
+  public void existsTestWithRouting() throws IOException {
     String mapping = loadMapping(MAPPINGS_FILE);
 
     indexManager.create(indexName, mapping);

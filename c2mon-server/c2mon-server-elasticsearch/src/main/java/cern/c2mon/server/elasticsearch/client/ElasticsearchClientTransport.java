@@ -82,13 +82,15 @@ public final class ElasticsearchClientTransport implements ElasticsearchClient<C
             .put("cluster.name", properties.getClusterName())
             .put("http.enabled", properties.isHttpEnabled());
 
-    try (TransportClient transportClient = new PreBuiltTransportClient(settingsBuilder.build())) {
+    TransportClient transportClient = new PreBuiltTransportClient(settingsBuilder.build());
+    try {
       transportClient.addTransportAddress(new TransportAddress(InetAddress.getByName(properties.getHost()), properties.getPort()));
-      return transportClient;
     } catch (UnknownHostException e) {
       log.error("Error connecting to the Elasticsearch cluster at {}:{}", properties.getHost(), properties.getPort(), e);
       return null;
     }
+
+    return transportClient;
   }
 
   /**
@@ -101,7 +103,6 @@ public final class ElasticsearchClientTransport implements ElasticsearchClient<C
     new Thread(() -> {
       log.info("Connected to Elasticsearch cluster {}", properties.getClusterName());
       waitForYellowStatus();
-
     }, "EsClusterFinder").start();
   }
 
@@ -125,7 +126,7 @@ public final class ElasticsearchClientTransport implements ElasticsearchClient<C
       nodeReady.get(120, TimeUnit.SECONDS);
     } catch (InterruptedException | ExecutionException | TimeoutException e) {
       log.error("Exception when waiting for yellow status", e);
-      throw new IllegalStateException("Exception when waiting for Elasticsearch yellow status!");
+      throw new IllegalStateException("Exception when waiting for Elasticsearch yellow status!", e);
     }
   }
 
