@@ -54,6 +54,7 @@ public final class EmbeddedElasticsearchManager {
                 .withSetting(PopularProperties.TRANSPORT_TCP_PORT, properties.getPort())
                 .withSetting(PopularProperties.HTTP_PORT, properties.getHttpPort())
                 .withSetting(PopularProperties.CLUSTER_NAME, properties.getClusterName())
+                .withEsJavaOpts("-Des.insecure.allow.root=true")
                 .withStartTimeout(1, TimeUnit.MINUTES)
                 .build();
 
