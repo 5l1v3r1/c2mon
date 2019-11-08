@@ -17,7 +17,12 @@
 package cern.c2mon.server.elasticsearch;
 
 import cern.c2mon.server.elasticsearch.tag.TagDocument;
+import org.junit.Before;
 import org.junit.Test;
+
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
 
 import static junit.framework.TestCase.assertEquals;
 
@@ -29,6 +34,11 @@ public class IndexNameManagerTests {
   private static final String TIMESTAMP_PROPERTY = "timestamp";
 
   private IndexNameManager indexNameManager = new IndexNameManager(ElasticsearchSuiteTest.getProperties());
+
+  @Before
+  public void setUp() {
+    indexNameManager.setClock(Clock.fixed(Instant.ofEpochMilli(1448928000000L), ZoneId.systemDefault()));
+  }
 
   @Test
   public void monthlyIndex() {

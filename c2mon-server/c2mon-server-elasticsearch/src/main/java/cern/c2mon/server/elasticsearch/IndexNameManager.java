@@ -26,6 +26,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.text.SimpleDateFormat;
+import java.time.Clock;
+import java.time.Instant;
 import java.util.Date;
 import java.util.Locale;
 
@@ -35,7 +37,7 @@ import java.util.Locale;
 @Component
 public class IndexNameManager {
 
-  private static final String TIMESTAMP_PROPERTY = "timestamp";
+  private Clock clock;
 
   @Getter
   private ElasticsearchProperties properties;
@@ -46,6 +48,7 @@ public class IndexNameManager {
   @Autowired
   public IndexNameManager(ElasticsearchProperties properties) {
     this.properties = properties;
+    this.clock = Clock.systemDefaultZone();
   }
 
   /**
@@ -57,7 +60,7 @@ public class IndexNameManager {
    */
   public String indexFor(TagDocument tag) {
     String prefix = properties.getIndexPrefix() + "-tag_";
-    return getIndexName(prefix, (Long) tag.get(TIMESTAMP_PROPERTY));
+    return getIndexName(prefix, Instant.now(clock));
   }
 
   /**
@@ -79,7 +82,7 @@ public class IndexNameManager {
    */
   public String indexFor(AlarmDocument alarm) {
     String prefix = properties.getIndexPrefix() + "-alarm_";
-    return getIndexName(prefix, (Long) alarm.get(TIMESTAMP_PROPERTY));
+    return getIndexName(prefix, Instant.now(clock));
   }
 
   /**
@@ -91,7 +94,7 @@ public class IndexNameManager {
    */
   public String indexFor(SupervisionEventDocument supervisionEvent) {
     String prefix = properties.getIndexPrefix() + "-supervision_";
-    return getIndexName(prefix, (Long) supervisionEvent.get(TIMESTAMP_PROPERTY));
+    return getIndexName(prefix, Instant.now(clock));
   }
 
   /**
@@ -99,10 +102,10 @@ public class IndexNameManager {
    * time series indexing strategy.
    *
    * @param prefix    the index prefix
-   * @param timestamp the timestamp which will be used to generate the index
+   * @param instant the instant which will be used to generate the index
    * @return the generated index name
    */
-  private String getIndexName(String prefix, long timestamp) {
+  private String getIndexName(String prefix, Instant instant) {
     String indexType = properties.getIndexType();
     String dateFormat;
 
@@ -119,6 +122,15 @@ public class IndexNameManager {
         break;
     }
 
-    return prefix + new SimpleDateFormat(dateFormat, Locale.getDefault()).format(new Date(timestamp));
+    return prefix + new SimpleDateFormat(dateFormat, Locale.getDefault()).format(Date.from(instant));
+  }
+
+  /**
+   * Used for testing to set up the clock for determined instant
+   *
+   * @param clock instance to be used
+   */
+  protected void setClock(Clock clock) {
+    this.clock = clock;
   }
 }
