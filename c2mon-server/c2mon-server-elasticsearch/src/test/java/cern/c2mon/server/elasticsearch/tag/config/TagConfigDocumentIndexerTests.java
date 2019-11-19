@@ -17,15 +17,16 @@
 package cern.c2mon.server.elasticsearch.tag.config;
 
 import cern.c2mon.server.common.datatag.DataTagCacheObject;
-import cern.c2mon.server.elasticsearch.ElasticsearchTestDefinition;
 import cern.c2mon.server.elasticsearch.ElasticsearchSuiteTest;
+import cern.c2mon.server.elasticsearch.ElasticsearchTestDefinition;
 import cern.c2mon.server.elasticsearch.IndexManager;
 import cern.c2mon.server.elasticsearch.IndexNameManager;
 import cern.c2mon.server.elasticsearch.junit.CachePopulationRule;
 import cern.c2mon.server.elasticsearch.util.EmbeddedElasticsearchManager;
 import cern.c2mon.server.elasticsearch.util.EntityUtils;
 import cern.c2mon.server.elasticsearch.util.IndexUtils;
-import org.json.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -96,10 +97,11 @@ public class TagConfigDocumentIndexerTests extends ElasticsearchTestDefinition {
     List<String> indexData = EmbeddedElasticsearchManager.getEmbeddedNode().fetchAllDocuments(indexName);
     assertEquals("Index should have one document inserted.", 1, indexData.size());
 
-    JSONObject jsonObject = new JSONObject(indexData.get(0));
+    ObjectMapper objectMapper = new ObjectMapper();
+    JsonNode jsonNode = objectMapper.readTree(indexData.get(0));
 
-    assertEquals(tag.getDescription() + " MODIFIED.", jsonObject.getString("description"));
-    assertEquals("eggs", jsonObject.getJSONObject("metadata").getString("spam"));
+    assertEquals(tag.getDescription() + " MODIFIED.", jsonNode.get("description").asText());
+    assertEquals("eggs", jsonNode.get("metadata").get("spam").asText());
   }
 
   @Test

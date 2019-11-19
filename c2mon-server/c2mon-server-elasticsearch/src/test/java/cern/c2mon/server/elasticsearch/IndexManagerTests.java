@@ -20,8 +20,8 @@ import cern.c2mon.server.elasticsearch.client.ElasticsearchClientRest;
 import cern.c2mon.server.elasticsearch.client.ElasticsearchClientTransport;
 import cern.c2mon.server.elasticsearch.util.EmbeddedElasticsearchManager;
 import cern.c2mon.server.elasticsearch.util.IndexUtils;
-import org.elasticsearch.node.NodeValidationException;
-import org.json.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -187,9 +187,10 @@ public class IndexManagerTests {
     List<String> indexData = EmbeddedElasticsearchManager.getEmbeddedNode().fetchAllDocuments(indexName);
     assertEquals("Upsert should create document which does not exist.", 1, indexData.size());
 
-    JSONObject jsonObject = new JSONObject(indexData.get(0));
+    ObjectMapper objectMapper = new ObjectMapper();
+    JsonNode jsonNode = objectMapper.readTree(indexData.get(0));
 
-    assertEquals("Updated document should have updated values.", UPDATED_NAME, jsonObject.getString("name"));
+    assertEquals("Updated document should have updated values.", UPDATED_NAME, jsonNode.get("name").asText());
   }
 
   @Test
@@ -210,9 +211,10 @@ public class IndexManagerTests {
 
     List<String> indexData = EmbeddedElasticsearchManager.getEmbeddedNode().fetchAllDocuments(indexName);
 
-    JSONObject jsonObject = new JSONObject(indexData.get(0));
+    ObjectMapper objectMapper = new ObjectMapper();
+    JsonNode jsonNode = objectMapper.readTree(indexData.get(0));
 
-    assertEquals("Updated document should have updated values.", UPDATED_NAME, jsonObject.getString("name"));
+    assertEquals("Updated document should have updated values.", UPDATED_NAME, jsonNode.get("name").asText());
   }
 
   @Test
