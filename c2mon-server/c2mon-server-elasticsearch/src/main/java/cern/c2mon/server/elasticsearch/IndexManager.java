@@ -28,7 +28,7 @@ public interface IndexManager {
    * <a href="https://www.elastic.co/guide/en/elasticsearch/reference/master/removal-of-types.html">Elasticsearch
    * documentation</a> for more details).
    */
-  String TYPE = "_doc";
+  String TYPE = "doc";
 
   /**
    * Create a new index with an initial mapping.

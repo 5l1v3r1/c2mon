@@ -327,8 +327,7 @@ public class ElasticsearchService {
         "      }, {\n" +
         "        \"match\" : {\n" +
         "          \"metadata.%s\" : {\n" +
-        "            \"query\" : \"%s\",\n" +
-        "            \"type\" : \"boolean\"\n" +
+        "            \"query\" : \"%s\"\n" +
         "          }\n" +
         "        }\n" +
         "      } ]\n" +
@@ -380,8 +379,7 @@ public class ElasticsearchService {
         "  \"query\" : {\n" +
         "    \"match\" : {\n" +
         "      \"metadata.%s\" : {\n" +
-        "        \"query\" : \"%s\",\n" +
-        "        \"type\" : \"boolean\"\n" +
+        "        \"query\" : \"%s\"\n" +
         "      }\n" +
         "    }\n" +
         "  }\n" +
@@ -454,8 +452,7 @@ public class ElasticsearchService {
         "  \"query\" : {\n" +
         "    \"match\" : {\n" +
         "      \"alarms.metadata.%s\" : {\n" +
-        "        \"query\" : \"%s\",\n" +
-        "        \"type\" : \"boolean\"\n" +
+        "        \"query\" : \"%s\"\n" +
         "      }\n" +
         "    }\n" +
         "  }\n" +

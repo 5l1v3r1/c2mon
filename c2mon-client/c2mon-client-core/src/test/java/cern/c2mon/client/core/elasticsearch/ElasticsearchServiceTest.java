@@ -120,11 +120,11 @@ public class ElasticsearchServiceTest {
 
       assertEquals("There should be 2 tags, one for responsible and one for 1234", 2, service.getDistinctMetadataKeys().size());
 
-      Collection<Long> tagsForResponsibleUser = service.findByMetadata(responsible, testUser);
+      Collection<Long> tagsForResponsibleUser = service.findTagsByMetadata(responsible, testUser);
       assertEquals("There should be one tag with responsible user set to requested value", 1, tagsForResponsibleUser.size());
       assertEquals(testUserTagId, tagsForResponsibleUser.stream().findFirst().get());
 
-      Collection<Long> tags1234 = service.findByMetadata(key1234, value1234);
+      Collection<Long> tags1234 = service.findTagsByMetadata(key1234, value1234);
       assertEquals("There should be one tag with 1234 parameter set to requested value", 1, tags1234.size());
       assertEquals(tag1234Id, tags1234.stream().findFirst().get());
     } catch (Exception e) {
