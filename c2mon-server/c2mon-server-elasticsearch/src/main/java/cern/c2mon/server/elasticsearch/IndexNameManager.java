@@ -40,7 +40,7 @@ public class IndexNameManager {
   private Clock clock;
 
   @Getter
-  private ElasticsearchProperties properties;
+  private final ElasticsearchProperties properties;
 
   /**
    * @param properties of Elasticsearch server the application is communicating with.
@@ -109,7 +109,7 @@ public class IndexNameManager {
     String indexType = properties.getIndexType();
     String dateFormat;
 
-    switch (indexType.toLowerCase()) {
+    switch (indexType.toLowerCase(Locale.getDefault())) {
       case "d":
         dateFormat = "yyyy-MM-dd";
         break;

@@ -56,8 +56,8 @@ public class IndexManagerTransport implements IndexManager {
 
   private final List<String> indexCache = new CopyOnWriteArrayList<>();
 
-  private ElasticsearchProperties properties;
-  private ElasticsearchClientTransport client;
+  private final ElasticsearchClientTransport client;
+  private final ElasticsearchProperties properties;
 
   /**
    * @param client {@link ElasticsearchClientTransport} client instance.
