@@ -118,7 +118,7 @@ public class ElasticsearchServiceTest {
 
       ElasticsearchService service = new ElasticsearchService(properties, "c2mon");
 
-      assertEquals("There should be 2 tags, one for responsible and one for 1234", 2, service.getDistinctMetadataKeys().size());
+      assertEquals("There should be 2 tags, one for responsible and one for 1234", 2, service.getDistinctTagMetadataKeys().size());
 
       Collection<Long> tagsForResponsibleUser = service.findTagsByMetadata(responsible, testUser);
       assertEquals("There should be one tag with responsible user set to requested value", 1, tagsForResponsibleUser.size());
@@ -175,7 +175,7 @@ public class ElasticsearchServiceTest {
   public void testSearchByName() throws InterruptedException {
     try {
       ElasticsearchService service = new ElasticsearchService(properties, "c2mon");
-      Collection<Long> tagsForResponsibleUser = service.findByName("TEST");
+      Collection<Long> tagsForResponsibleUser = service.findTagsByName("TEST");
       assertNotNull("The tags collection should not be null", tagsForResponsibleUser);
       assertEquals("There tags collection should be empty", 0, tagsForResponsibleUser.size());
     } catch (Exception e) {
