@@ -32,6 +32,8 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public final class EmbeddedElasticsearchManager {
 
+  private static final String ELASTICSEARCH_VERSION = "6.4.0";
+
   private static EmbeddedElastic embeddedNode;
 
   private EmbeddedElasticsearchManager() {
@@ -50,12 +52,11 @@ public final class EmbeddedElasticsearchManager {
         log.info("Starting embedded Elasticsearch instance!");
 
         embeddedNode = EmbeddedElastic.builder()
-                .withElasticVersion(properties.getVersion())
+                .withElasticVersion(ELASTICSEARCH_VERSION)
                 .withSetting(PopularProperties.TRANSPORT_TCP_PORT, properties.getPort())
                 .withSetting(PopularProperties.HTTP_PORT, properties.getHttpPort())
                 .withSetting(PopularProperties.CLUSTER_NAME, properties.getClusterName())
-                .withEsJavaOpts("-Des.insecure.allow.root=true")
-                .withStartTimeout(1, TimeUnit.MINUTES)
+                .withStartTimeout(2, TimeUnit.MINUTES)
                 .build();
 
         try {

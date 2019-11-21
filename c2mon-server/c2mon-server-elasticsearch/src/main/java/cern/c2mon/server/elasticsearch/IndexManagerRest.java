@@ -57,8 +57,8 @@ public class IndexManagerRest implements IndexManager {
 
   private final List<String> indexCache = new CopyOnWriteArrayList<>();
 
-  private ElasticsearchProperties properties;
-  private ElasticsearchClientRest client;
+  private final ElasticsearchClientRest client;
+  private final ElasticsearchProperties properties;
 
   /**
    * @param client {@link ElasticsearchClientRest} client instance.
@@ -83,7 +83,9 @@ public class IndexManagerRest implements IndexManager {
               .put("index.number_of_replicas", properties.getReplicasPerShard())
       );
 
-      request.mapping(TYPE, mapping, XContentType.JSON);
+      if (properties.isAutoTemplateMapping()) {
+        request.mapping(TYPE, mapping, XContentType.JSON);
+      }
 
       boolean created = false;
       try {

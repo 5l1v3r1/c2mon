@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
  *
  * @author Justin Lewis Salmon
  */
-public class MappingFactory {
+public final class MappingFactory {
 
   private static final String TAG_MAPPING = "mappings/tag.json";
   private static final String TAG_CONFIG_MAPPING = "mappings/tag-config.json";

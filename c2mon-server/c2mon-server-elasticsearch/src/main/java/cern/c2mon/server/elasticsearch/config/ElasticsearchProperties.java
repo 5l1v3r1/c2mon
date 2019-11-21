@@ -142,7 +142,7 @@ public class ElasticsearchProperties {
   private String supervisionFallbackFile = "/tmp/es-supervision-fallback.txt";
 
   /**
-   * Elasticsearch server version.
+   * Defines whether mapping templates are managed by C2MON
    */
-  private String version = "6.4.0";
+  private boolean autoTemplateMapping = true;
 }
