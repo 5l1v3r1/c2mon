@@ -48,7 +48,7 @@ public class IndexNameManagerTests {
     document.put(TIMESTAMP_PROPERTY, 1448928000000L);
 
     String index = indexNameManager.indexFor(document);
-    assertEquals("c2mon-tag_2015-12", index);
+    assertEquals("Monthly index name should contain month definition","c2mon-tag_2015-12", index);
   }
 
   @Test
@@ -59,7 +59,7 @@ public class IndexNameManagerTests {
     document.put(TIMESTAMP_PROPERTY, 1448928000000L);
 
     String index = indexNameManager.indexFor(document);
-    assertEquals("c2mon-tag_2015-W49", index);
+    assertEquals("Weekly index name should contain week definition", "c2mon-tag_2015-W49", index);
   }
 
   @Test
@@ -70,6 +70,6 @@ public class IndexNameManagerTests {
     document.put(TIMESTAMP_PROPERTY, 1448928000000L);
 
     String index = indexNameManager.indexFor(document);
-    assertEquals("c2mon-tag_2015-12-01", index);
+    assertEquals("Daily index name should contain day definition", "c2mon-tag_2015-12-01", index);
   }
 }

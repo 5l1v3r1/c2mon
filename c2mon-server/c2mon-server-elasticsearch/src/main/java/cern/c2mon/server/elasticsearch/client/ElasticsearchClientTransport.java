@@ -52,12 +52,10 @@ import java.util.concurrent.TimeoutException;
 @Component
 @ConditionalOnProperty(name = "c2mon.server.elasticsearch.rest", havingValue = "false")
 public final class ElasticsearchClientTransport implements ElasticsearchClient<Client> {
-
   @Getter
-  private ElasticsearchProperties properties;
-
+  private final ElasticsearchProperties properties;
   @Getter
-  private Client client;
+  private final Client client;
 
   /**
    * @param properties to initialize Transport client.
