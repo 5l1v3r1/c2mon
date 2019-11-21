@@ -45,9 +45,9 @@ import java.io.IOException;
 @ConditionalOnProperty(name = "c2mon.server.elasticsearch.rest", havingValue = "true")
 public final class ElasticsearchClientRest implements ElasticsearchClient<RestHighLevelClient> {
   @Getter
-  private ElasticsearchProperties properties;
-
-  private RestHighLevelClient restHighLevelClient;
+  private final ElasticsearchProperties properties;
+  @Getter
+  private final RestHighLevelClient client;
 
   /**
    * @param properties to initialize REST client.
@@ -59,10 +59,10 @@ public final class ElasticsearchClientRest implements ElasticsearchClient<RestHi
     RestClientBuilder restClientBuilder =
             RestClient.builder(new HttpHost(properties.getHost(), properties.getHttpPort(), "http"));
 
-    restHighLevelClient = new RestHighLevelClient(restClientBuilder);
+    client = new RestHighLevelClient(restClientBuilder);
 
     try {
-      if (!restHighLevelClient.ping(RequestOptions.DEFAULT)) {
+      if (!client.ping(RequestOptions.DEFAULT)) {
         log.error("Error pinging to the Elasticsearch cluster at {}:{}", properties.getHost(), properties.getHttpPort());
       }
     } catch (IOException e) {
@@ -76,7 +76,7 @@ public final class ElasticsearchClientRest implements ElasticsearchClient<RestHi
     request.timeout("60s");
     request.waitForYellowStatus();
 
-    restHighLevelClient.cluster().healthAsync(request, RequestOptions.DEFAULT, new ActionListener<ClusterHealthResponse>() {
+    client.cluster().healthAsync(request, RequestOptions.DEFAULT, new ActionListener<ClusterHealthResponse>() {
       @Override
       public void onResponse(ClusterHealthResponse response) {
         log.info("Waiting for Elasticsearch yellow status completed successfully. ");
@@ -96,7 +96,7 @@ public final class ElasticsearchClientRest implements ElasticsearchClient<RestHi
     request.waitForYellowStatus();
 
     try {
-      return restHighLevelClient.cluster().health(request, RequestOptions.DEFAULT).getStatus();
+      return client.cluster().health(request, RequestOptions.DEFAULT).getStatus();
     } catch (IOException e) {
       log.error("There was a problem executing Elasticsearch cluster health check request.", e);
     }
@@ -106,19 +106,14 @@ public final class ElasticsearchClientRest implements ElasticsearchClient<RestHi
 
   @Override
   public void close() {
-    if (restHighLevelClient != null) {
+    if (client != null) {
       try {
-        restHighLevelClient.close();
+        client.close();
         log.info("Closed Elasticsearch client.");
       } catch (IOException e) {
         log.error("Error closing Elasticsearch client.", e);
       }
     }
-  }
-
-  @Override
-  public RestHighLevelClient getClient() {
-    return restHighLevelClient;
   }
 
   @Override

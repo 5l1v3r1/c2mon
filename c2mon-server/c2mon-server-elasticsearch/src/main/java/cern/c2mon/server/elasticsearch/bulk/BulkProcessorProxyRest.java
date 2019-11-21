@@ -45,7 +45,7 @@ import java.util.function.BiConsumer;
 @ConditionalOnProperty(name = "c2mon.server.elasticsearch.rest", havingValue = "true")
 public class BulkProcessorProxyRest implements BulkProcessorProxy, BulkProcessor.Listener {
 
-  private BulkProcessor bulkProcessor;
+  private final BulkProcessor bulkProcessor;
 
   /**
    * @param client to be used to communicate with Elasticsearch cluster.
