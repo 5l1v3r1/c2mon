@@ -78,9 +78,9 @@ public class IndexManagerTransport implements IndexManager {
 
       CreateIndexRequestBuilder builder = client.getClient().admin().indices().prepareCreate(indexName);
       builder.setSettings(Settings.builder()
-              .put("number_of_shards", properties.getShardsPerIndex())
-              .put("number_of_replicas", properties.getReplicasPerShard())
-              .build());
+          .put("number_of_shards", properties.getShardsPerIndex())
+          .put("number_of_replicas", properties.getReplicasPerShard())
+          .build());
 
       if (mapping != null) {
         builder.addMapping(TYPE, mapping, XContentType.JSON);

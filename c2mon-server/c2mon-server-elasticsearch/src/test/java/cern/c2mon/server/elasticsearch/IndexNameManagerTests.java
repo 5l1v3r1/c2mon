@@ -49,7 +49,7 @@ public class IndexNameManagerTests {
     document.put(TIMESTAMP_PROPERTY, 1448928000000L);
 
     String index = indexNameManager.indexFor(document);
-    assertEquals("Monthly index name should contain month definition","c2mon-tag_2015-12", index);
+    assertEquals("Monthly index name should contain month definition", "c2mon-tag_2015-12", index);
   }
 
   @Test

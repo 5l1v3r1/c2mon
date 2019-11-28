@@ -50,11 +50,11 @@ public class BulkProcessorProxyTransport implements BulkProcessor.Listener, Bulk
   @Autowired
   public BulkProcessorProxyTransport(final ElasticsearchClientTransport client) {
     this.bulkProcessor = BulkProcessor.builder(client.getClient(), this)
-            .setBulkActions(client.getProperties().getBulkActions())
-            .setBulkSize(new ByteSizeValue(client.getProperties().getBulkSize(), ByteSizeUnit.MB))
-            .setFlushInterval(TimeValue.timeValueSeconds(client.getProperties().getBulkFlushInterval()))
-            .setConcurrentRequests(client.getProperties().getConcurrentRequests())
-            .build();
+        .setBulkActions(client.getProperties().getBulkActions())
+        .setBulkSize(new ByteSizeValue(client.getProperties().getBulkSize(), ByteSizeUnit.MB))
+        .setFlushInterval(TimeValue.timeValueSeconds(client.getProperties().getBulkFlushInterval()))
+        .setConcurrentRequests(client.getProperties().getConcurrentRequests())
+        .build();
   }
 
   @Override

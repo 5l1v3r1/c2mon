@@ -74,7 +74,7 @@ public class SupervisionEventDocumentListener implements SupervisionListener, Sm
     }
 
     log.debug("Indexing supervision event {} for entity {} (#{})",
-            supervisionEvent.getStatus(), supervisionEvent.getEntity(), supervisionEvent.getEntityId());
+        supervisionEvent.getStatus(), supervisionEvent.getEntity(), supervisionEvent.getEntityId());
 
     persistenceManager.storeData(converter.convert(supervisionEvent));
   }

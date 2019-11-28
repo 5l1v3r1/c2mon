@@ -80,16 +80,14 @@ public class TagDocumentListener implements C2monBufferedCacheListener<Tag>, Sma
       return;
     }
 
-    Collection<Tag> loggables = tags.stream()
-            .filter(Tag::isLogged)
-            .collect(Collectors.toList());
+    Collection<Tag> loggables = tags.stream().filter(Tag::isLogged).collect(Collectors.toList());
     log.debug("About to log {} tags", loggables.size());
 
     List<TagDocument> tagDocuments = loggables.stream()
-            .map(tag -> converter.convert(tag))
-            .filter(Optional::isPresent)
-            .map(Optional::get)
-            .collect(Collectors.toList());
+        .map(tag -> converter.convert(tag))
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .collect(Collectors.toList());
 
     persistenceManager.storeData(tagDocuments);
   }

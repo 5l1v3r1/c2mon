@@ -31,13 +31,13 @@ import cern.c2mon.server.elasticsearch.util.EmbeddedElasticsearchManager;
 import cern.c2mon.server.supervision.config.SupervisionModule;
 
 @ContextConfiguration(classes = {
-        CommonModule.class,
-        CacheModule.class,
-        CacheDbAccessModule.class,
-        CacheLoadingModule.class,
-        SupervisionModule.class,
-        ElasticsearchModule.class,
-        CachePopulationRule.class
+    CommonModule.class,
+    CacheModule.class,
+    CacheDbAccessModule.class,
+    CacheLoadingModule.class,
+    SupervisionModule.class,
+    ElasticsearchModule.class,
+    CachePopulationRule.class
 })
 @RunWith(SpringJUnit4ClassRunner.class)
 public abstract class ElasticsearchTestDefinition {

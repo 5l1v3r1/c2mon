@@ -41,13 +41,13 @@ import static org.junit.Assert.assertEquals;
  */
 @Slf4j
 @ContextConfiguration(classes = {
-        CommonModule.class,
-        CacheModule.class,
-        CacheDbAccessModule.class,
-        CacheLoadingModule.class,
-        SupervisionModule.class,
-        ElasticsearchModule.class,
-        CachePopulationRule.class
+    CommonModule.class,
+    CacheModule.class,
+    CacheDbAccessModule.class,
+    CacheLoadingModule.class,
+    SupervisionModule.class,
+    ElasticsearchModule.class,
+    CachePopulationRule.class
 })
 @RunWith(SpringJUnit4ClassRunner.class)
 public class ElasticsearchModuleIntegrationTests {
@@ -56,6 +56,6 @@ public class ElasticsearchModuleIntegrationTests {
   public void testModuleStartup() throws IOException {
     List<String> indexData = EmbeddedElasticsearchManager.getEmbeddedNode().fetchAllDocuments();
     assertEquals("Embedded node should not contain any documents before each test and start successfuly.",
-            0, indexData.size());
+        0, indexData.size());
   }
 }

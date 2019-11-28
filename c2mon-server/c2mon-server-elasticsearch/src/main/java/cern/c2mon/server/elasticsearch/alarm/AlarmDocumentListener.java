@@ -96,16 +96,16 @@ public class AlarmDocumentListener implements C2monCacheListener<Alarm>, SmartLi
   @Override
   public void start() {
     if (this.elasticsearchClient.getProperties().isEnabled()) {
-        running = true;
-        listenerContainer.start();
+      running = true;
+      listenerContainer.start();
     }
   }
 
   @Override
   public void stop() {
     if (this.elasticsearchClient.getProperties().isEnabled()) {
-        listenerContainer.stop();
-        running = false;
+      listenerContainer.stop();
+      running = false;
     }
 
   }

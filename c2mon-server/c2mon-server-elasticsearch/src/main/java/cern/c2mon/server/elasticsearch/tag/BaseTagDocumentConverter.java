@@ -71,15 +71,15 @@ public class BaseTagDocumentConverter<T extends Map<String, Object>> implements 
     Metadata metadata = tag.getMetadata();
     if (metadata != null) {
       return metadata.getMetadata().entrySet().stream()
-              .filter(entry -> Objects.nonNull(entry.getKey()) && Objects.nonNull(entry.getValue()))
-              .collect(Collectors.toMap(
-                      Map.Entry::getKey,
-                      Map.Entry::getValue,
-                      (u, v) -> {
-                        throw new IllegalStateException(String.format("Duplicate key %s", u));
-                      },
-                      containerSupplier
-              ));
+          .filter(entry -> Objects.nonNull(entry.getKey()) && Objects.nonNull(entry.getValue()))
+          .collect(Collectors.toMap(
+              Map.Entry::getKey,
+              Map.Entry::getValue,
+              (u, v) -> {
+                throw new IllegalStateException(String.format("Duplicate key %s", u));
+              },
+              containerSupplier
+          ));
     }
     return containerSupplier.get();
   }

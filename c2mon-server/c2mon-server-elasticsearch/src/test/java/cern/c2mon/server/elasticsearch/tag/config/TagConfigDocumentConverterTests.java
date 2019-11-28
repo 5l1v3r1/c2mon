@@ -55,7 +55,7 @@ public class TagConfigDocumentConverterTests extends BaseTagDocumentConverterTes
     when(processCache.get(any())).thenReturn(process);
     when(equipmentCache.get(any())).thenReturn(equipment);
     TagConfigDocument document = converter.convert(tag)
-            .orElseThrow(() -> new Exception("Tag conversion failed"));
+        .orElseThrow(() -> new Exception("Tag conversion failed"));
 
     // Serialize
     String json = document.toString();

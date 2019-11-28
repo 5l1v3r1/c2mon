@@ -63,8 +63,8 @@ public class IndexManagerTests {
   @Parameters
   public static Collection<IndexManager> getIndexManagerClass() {
     return Arrays.asList(
-            new IndexManagerRest(new ElasticsearchClientRest(ElasticsearchSuiteTest.getProperties())),
-            new IndexManagerTransport(new ElasticsearchClientTransport(ElasticsearchSuiteTest.getProperties())));
+        new IndexManagerRest(new ElasticsearchClientRest(ElasticsearchSuiteTest.getProperties())),
+        new IndexManagerTransport(new ElasticsearchClientTransport(ElasticsearchSuiteTest.getProperties())));
   }
 
   private String indexName;
@@ -101,7 +101,7 @@ public class IndexManagerTests {
     indexManager.create(indexName, mapping);
 
     assertTrue("Index should have been created.",
-            IndexUtils.doesIndexExist(indexName, ElasticsearchSuiteTest.getProperties()));
+        IndexUtils.doesIndexExist(indexName, ElasticsearchSuiteTest.getProperties()));
   }
 
   @Test
@@ -117,7 +117,7 @@ public class IndexManagerTests {
     EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
 
     assertEquals("Index should have one document inserted.", 1,
-            EmbeddedElasticsearchManager.getEmbeddedNode().fetchAllDocuments(indexName).size());
+        EmbeddedElasticsearchManager.getEmbeddedNode().fetchAllDocuments(indexName).size());
   }
 
   @Test
@@ -133,7 +133,7 @@ public class IndexManagerTests {
     EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
 
     assertEquals("Index should have one document inserted.", 1,
-            EmbeddedElasticsearchManager.getEmbeddedNode().fetchAllDocuments(indexName).size());
+        EmbeddedElasticsearchManager.getEmbeddedNode().fetchAllDocuments(indexName).size());
   }
 
   @Test
@@ -158,7 +158,7 @@ public class IndexManagerTests {
     indexManager.purgeIndexCache();
 
     assertTrue("'exists()' method should check index existence on the server once cache is purged.",
-            indexManager.exists(indexName));
+        indexManager.exists(indexName));
   }
 
   @Test
@@ -170,7 +170,7 @@ public class IndexManagerTests {
     EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
 
     assertTrue("'exists()' method should report index as exiting.",
-            indexManager.exists(indexName, "1"));
+        indexManager.exists(indexName, "1"));
   }
 
   @Test
@@ -225,12 +225,12 @@ public class IndexManagerTests {
     EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
 
     assertEquals("Index should be created if updating non-existing index.", 1,
-            EmbeddedElasticsearchManager.getEmbeddedNode().fetchAllDocuments(indexName).size());
+        EmbeddedElasticsearchManager.getEmbeddedNode().fetchAllDocuments(indexName).size());
   }
 
   private String loadMapping(String source) throws IOException {
     return new BufferedReader(new InputStreamReader(new ClassPathResource(source).getInputStream()))
-            .lines()
-            .collect(Collectors.joining(""));
+        .lines()
+        .collect(Collectors.joining(""));
   }
 }

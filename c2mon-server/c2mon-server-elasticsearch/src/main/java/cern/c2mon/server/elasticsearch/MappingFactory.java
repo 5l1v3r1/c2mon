@@ -83,8 +83,8 @@ public final class MappingFactory {
 
   private static String loadMapping(String location) {
     return new BufferedReader(new InputStreamReader(loadResource(location)))
-            .lines()
-            .collect(Collectors.joining(""));
+        .lines()
+        .collect(Collectors.joining(""));
   }
 
   private static InputStream loadResource(String location) {

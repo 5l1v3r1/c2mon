@@ -78,8 +78,8 @@ public final class ElasticsearchClientTransport implements ElasticsearchClient<C
     final Settings.Builder settingsBuilder = Settings.builder();
 
     settingsBuilder.put("node.name", properties.getNodeName())
-            .put("cluster.name", properties.getClusterName())
-            .put("http.enabled", properties.isHttpEnabled());
+        .put("cluster.name", properties.getClusterName())
+        .put("http.enabled", properties.isHttpEnabled());
 
     TransportClient transportClient = new PreBuiltTransportClient(settingsBuilder.build());
     try {
@@ -97,7 +97,7 @@ public final class ElasticsearchClientTransport implements ElasticsearchClient<C
    */
   private void connectAsynchronously() {
     log.info("Trying to connect to Elasticsearch cluster {} at {}:{}",
-            properties.getClusterName(), properties.getHost(), properties.getPort());
+        properties.getClusterName(), properties.getHost(), properties.getPort());
 
     new Thread(() -> {
       log.info("Connected to Elasticsearch cluster {}", properties.getClusterName());
@@ -110,17 +110,17 @@ public final class ElasticsearchClientTransport implements ElasticsearchClient<C
   public void waitForYellowStatus() {
     try {
       CompletableFuture<Void> nodeReady = CompletableFuture.runAsync(() -> {
-                while (true) {
-                  log.info("Waiting for yellow status of Elasticsearch cluster...");
+            while (true) {
+              log.info("Waiting for yellow status of Elasticsearch cluster...");
 
-                  if (isClusterYellow()) {
-                    break;
-                  }
-
-                  sleep(100L);
-                }
-                log.info("Elasticsearch cluster is yellow");
+              if (isClusterYellow()) {
+                break;
               }
+
+              sleep(100L);
+            }
+            log.info("Elasticsearch cluster is yellow");
+          }
       );
       nodeReady.get(120, TimeUnit.SECONDS);
     } catch (InterruptedException | ExecutionException | TimeoutException e) {
@@ -140,9 +140,9 @@ public final class ElasticsearchClientTransport implements ElasticsearchClient<C
 
   private ClusterHealthResponse getClusterHealth() {
     return client.admin().cluster().prepareHealth()
-            .setWaitForYellowStatus()
-            .setTimeout(TimeValue.timeValueMillis(100))
-            .get();
+        .setWaitForYellowStatus()
+        .setTimeout(TimeValue.timeValueMillis(100))
+        .get();
   }
 
   public boolean isClusterYellow() {

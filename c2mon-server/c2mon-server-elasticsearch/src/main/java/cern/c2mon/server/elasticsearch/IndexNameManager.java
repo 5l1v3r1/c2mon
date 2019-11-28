@@ -102,7 +102,7 @@ public class IndexNameManager {
    * Generate an index for the given prefix and timestamp, based on the current
    * time series indexing strategy.
    *
-   * @param prefix    the index prefix
+   * @param prefix  the index prefix
    * @param instant the instant which will be used to generate the index
    * @return the generated index name
    */

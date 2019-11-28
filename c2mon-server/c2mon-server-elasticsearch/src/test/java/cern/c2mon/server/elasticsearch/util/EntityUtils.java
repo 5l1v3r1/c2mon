@@ -83,6 +83,6 @@ public class EntityUtils {
 
   public static SupervisionEvent createSupervisionEvent() {
     return new SupervisionEventImpl(SupervisionConstants.SupervisionEntity.PROCESS, 50L,
-            "P_TEST01", SupervisionConstants.SupervisionStatus.DOWN, new Timestamp(System.currentTimeMillis()), "");
+        "P_TEST01", SupervisionConstants.SupervisionStatus.DOWN, new Timestamp(System.currentTimeMillis()), "");
   }
 }

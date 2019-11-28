@@ -53,12 +53,12 @@ public final class EmbeddedElasticsearchManager {
         log.info("Starting embedded Elasticsearch instance!");
 
         embeddedNode = EmbeddedElastic.builder()
-                .withElasticVersion(ELASTICSEARCH_VERSION)
-                .withSetting(PopularProperties.TRANSPORT_TCP_PORT, properties.getPort())
-                .withSetting(PopularProperties.HTTP_PORT, properties.getHttpPort())
-                .withSetting(PopularProperties.CLUSTER_NAME, properties.getClusterName())
-                .withStartTimeout(2, TimeUnit.MINUTES)
-                .build();
+            .withElasticVersion(ELASTICSEARCH_VERSION)
+            .withSetting(PopularProperties.TRANSPORT_TCP_PORT, properties.getPort())
+            .withSetting(PopularProperties.HTTP_PORT, properties.getHttpPort())
+            .withSetting(PopularProperties.CLUSTER_NAME, properties.getClusterName())
+            .withStartTimeout(2, TimeUnit.MINUTES)
+            .build();
 
         try {
           embeddedNode.start();

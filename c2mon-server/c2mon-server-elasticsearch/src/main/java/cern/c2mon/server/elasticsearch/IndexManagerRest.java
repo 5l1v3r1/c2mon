@@ -81,8 +81,8 @@ public class IndexManagerRest implements IndexManager {
       CreateIndexRequest request = new CreateIndexRequest(indexName);
 
       request.settings(Settings.builder()
-              .put("index.number_of_shards", properties.getShardsPerIndex())
-              .put("index.number_of_replicas", properties.getReplicasPerShard())
+          .put("index.number_of_shards", properties.getShardsPerIndex())
+          .put("index.number_of_replicas", properties.getReplicasPerShard())
       );
 
       if (properties.isAutoTemplateMapping()) {

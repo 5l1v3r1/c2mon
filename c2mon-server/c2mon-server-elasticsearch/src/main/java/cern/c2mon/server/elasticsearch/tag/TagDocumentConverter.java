@@ -50,8 +50,7 @@ public class TagDocumentConverter extends BaseTagDocumentConverter<TagDocument> 
   @Override
   public Optional<TagDocument> convert(final Tag tag) {
     try {
-      return super.convert(tag)
-              .map(tagDocument -> fillAdditionalData(tagDocument, tag));
+      return super.convert(tag).map(tagDocument -> fillAdditionalData(tagDocument, tag));
     } catch (Exception e) {
       log.error("Error occurred during conversion of Tag #{} ({}) to Elasticsearch document. Unable to store update to Elasticsearch!", tag.getId(), tag.getName(), e);
     }
@@ -131,13 +130,13 @@ public class TagDocumentConverter extends BaseTagDocumentConverter<TagDocument> 
    */
   private int calculateStatus(final Tag tag) {
     return Optional.ofNullable(tag.getDataTagQuality())
-            .map(DataTagQuality::getInvalidQualityStates)
-            .map(Map::keySet)
-            .map(tagQualityStatuses -> tagQualityStatuses.stream()
-                    .mapToInt(TagQualityStatus::getCode)
-                    .map(statusCode -> (int) Math.pow(2, statusCode))
-                    .sum())
-            .orElse(0);
+        .map(DataTagQuality::getInvalidQualityStates)
+        .map(Map::keySet)
+        .map(tagQualityStatuses -> tagQualityStatuses.stream()
+            .mapToInt(TagQualityStatus::getCode)
+            .map(statusCode -> (int) Math.pow(2, statusCode))
+            .sum())
+        .orElse(0);
   }
 
   /**
@@ -157,9 +156,9 @@ public class TagDocumentConverter extends BaseTagDocumentConverter<TagDocument> 
     }
 
     Collection<String> invalidQualityInfo = invalidQualityStates.entrySet().stream()
-            .map(invalidQualityState -> String.format("%s : %s",
-                    invalidQualityState.getKey().name(), invalidQualityState.getValue()))
-            .collect(Collectors.toSet());
+        .map(invalidQualityState -> String.format("%s : %s",
+            invalidQualityState.getKey().name(), invalidQualityState.getValue()))
+        .collect(Collectors.toSet());
 
     if (invalidQualityInfo.isEmpty()) {
       return Collections.singleton("OK");

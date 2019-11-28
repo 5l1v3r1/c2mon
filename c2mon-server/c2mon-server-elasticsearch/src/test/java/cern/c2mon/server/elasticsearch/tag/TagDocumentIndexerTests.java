@@ -75,7 +75,7 @@ public class TagDocumentIndexerTests extends ElasticsearchTestDefinition {
     EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
 
     assertTrue("Index should have been created.",
-            IndexUtils.doesIndexExist(indexName, ElasticsearchSuiteTest.getProperties()));
+        IndexUtils.doesIndexExist(indexName, ElasticsearchSuiteTest.getProperties()));
 
     List<String> indexData = EmbeddedElasticsearchManager.getEmbeddedNode().fetchAllDocuments(indexName);
     assertEquals("Index should have one document inserted.", 1, indexData.size());
@@ -92,7 +92,7 @@ public class TagDocumentIndexerTests extends ElasticsearchTestDefinition {
     EmbeddedElasticsearchManager.getEmbeddedNode().refreshIndices();
 
     assertTrue("Index should have been created.",
-            IndexUtils.doesIndexExist(indexName, ElasticsearchSuiteTest.getProperties()));
+        IndexUtils.doesIndexExist(indexName, ElasticsearchSuiteTest.getProperties()));
 
     List<String> indexData = EmbeddedElasticsearchManager.getEmbeddedNode().fetchAllDocuments(indexName);
     assertEquals("Index should have two documents inserted.", 2, indexData.size());

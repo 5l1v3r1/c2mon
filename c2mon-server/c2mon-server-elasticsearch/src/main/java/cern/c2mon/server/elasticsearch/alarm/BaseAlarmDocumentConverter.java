@@ -29,7 +29,6 @@ public class BaseAlarmDocumentConverter implements Converter<Alarm, AlarmDocumen
    * Convert given {@link Alarm} to {@link AlarmDocument}.
    *
    * @param alarm the alarm.
-   *
    * @return the alarm document.
    */
   @Override

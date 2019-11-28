@@ -54,14 +54,14 @@ public class BulkProcessorProxyRest implements BulkProcessorProxy, BulkProcessor
   @Autowired
   public BulkProcessorProxyRest(final ElasticsearchClientRest client) {
     BiConsumer<BulkRequest, ActionListener<BulkResponse>> bulkConsumer =
-            (request, bulkListener) -> client.getClient().bulkAsync(request, RequestOptions.DEFAULT, bulkListener);
+        (request, bulkListener) -> client.getClient().bulkAsync(request, RequestOptions.DEFAULT, bulkListener);
 
     bulkProcessor = BulkProcessor.builder(bulkConsumer, this)
-            .setBulkActions(client.getProperties().getBulkActions())
-            .setBulkSize(new ByteSizeValue(client.getProperties().getBulkSize(), ByteSizeUnit.MB))
-            .setFlushInterval(TimeValue.timeValueSeconds(client.getProperties().getBulkFlushInterval()))
-            .setConcurrentRequests(client.getProperties().getConcurrentRequests())
-            .build();
+        .setBulkActions(client.getProperties().getBulkActions())
+        .setBulkSize(new ByteSizeValue(client.getProperties().getBulkSize(), ByteSizeUnit.MB))
+        .setFlushInterval(TimeValue.timeValueSeconds(client.getProperties().getBulkFlushInterval()))
+        .setConcurrentRequests(client.getProperties().getConcurrentRequests())
+        .build();
   }
 
   @Override

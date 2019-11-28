@@ -84,8 +84,8 @@ public class TagDocumentIndexer implements IDBPersistenceHandler<TagDocument> {
     log.trace("Indexing tag (#{}, index={}, type={})", tag.getId(), index, IndexManager.TYPE);
 
     IndexRequest indexNewTag = new IndexRequest(index, IndexManager.TYPE)
-            .source(tag.toString(), XContentType.JSON)
-            .routing(tag.getId());
+        .source(tag.toString(), XContentType.JSON)
+        .routing(tag.getId());
 
     bulkProcessor.add(indexNewTag);
   }
