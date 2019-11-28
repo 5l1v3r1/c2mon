@@ -16,17 +16,18 @@
  *****************************************************************************/
 package cern.c2mon.server.elasticsearch.alarm;
 
+import java.util.Collections;
+import java.util.List;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import cern.c2mon.pmanager.IDBPersistenceHandler;
 import cern.c2mon.pmanager.persistence.exception.IDBPersistenceException;
 import cern.c2mon.server.elasticsearch.IndexManager;
 import cern.c2mon.server.elasticsearch.IndexNameManager;
 import cern.c2mon.server.elasticsearch.MappingFactory;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import java.util.Collections;
-import java.util.List;
 
 /**
  * This class manages the fallback-aware indexing of {@link AlarmDocument}

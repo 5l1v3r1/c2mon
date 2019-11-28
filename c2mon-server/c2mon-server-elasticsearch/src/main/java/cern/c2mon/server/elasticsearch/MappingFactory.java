@@ -16,17 +16,18 @@
  *****************************************************************************/
 package cern.c2mon.server.elasticsearch;
 
-import cern.c2mon.server.elasticsearch.alarm.AlarmDocument;
-import cern.c2mon.server.elasticsearch.supervision.SupervisionEventDocument;
-import cern.c2mon.server.elasticsearch.tag.TagDocument;
-import cern.c2mon.server.elasticsearch.tag.config.TagConfigDocument;
-import org.springframework.core.io.ClassPathResource;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.stream.Collectors;
+
+import org.springframework.core.io.ClassPathResource;
+
+import cern.c2mon.server.elasticsearch.alarm.AlarmDocument;
+import cern.c2mon.server.elasticsearch.supervision.SupervisionEventDocument;
+import cern.c2mon.server.elasticsearch.tag.TagDocument;
+import cern.c2mon.server.elasticsearch.tag.config.TagConfigDocument;
 
 /**
  * Factory for creating Elasticsearch mapping sources.

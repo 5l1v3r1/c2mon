@@ -16,7 +16,6 @@
  *****************************************************************************/
 package cern.c2mon.server.elasticsearch.bulk;
 
-import cern.c2mon.server.elasticsearch.client.ElasticsearchClientTransport;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.bulk.BulkRequest;
@@ -29,6 +28,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
+
+import cern.c2mon.server.elasticsearch.client.ElasticsearchClientTransport;
 
 /**
  * Wrapper around {@link BulkProcessor}. If a bulk operation fails, this class

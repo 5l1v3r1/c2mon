@@ -16,17 +16,18 @@
  *****************************************************************************/
 package cern.c2mon.server.elasticsearch.alarm;
 
-import cern.c2mon.pmanager.fallback.exception.DataFallbackException;
-import cern.c2mon.server.common.alarm.Alarm;
-import cern.c2mon.server.elasticsearch.util.EntityUtils;
+import java.sql.Timestamp;
+import java.util.Map;
+
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.internal.util.reflection.Whitebox;
 
-import java.sql.Timestamp;
-import java.util.Map;
+import cern.c2mon.pmanager.fallback.exception.DataFallbackException;
+import cern.c2mon.server.common.alarm.Alarm;
+import cern.c2mon.server.elasticsearch.util.EntityUtils;
 
 import static junit.framework.TestCase.assertEquals;
 

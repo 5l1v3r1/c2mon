@@ -16,21 +16,22 @@
  *****************************************************************************/
 package cern.c2mon.server.elasticsearch.supervision;
 
-import cern.c2mon.pmanager.persistence.exception.IDBPersistenceException;
-import cern.c2mon.server.elasticsearch.ElasticsearchTestDefinition;
-import cern.c2mon.server.elasticsearch.ElasticsearchSuiteTest;
-import cern.c2mon.server.elasticsearch.IndexNameManager;
-import cern.c2mon.server.elasticsearch.util.EmbeddedElasticsearchManager;
-import cern.c2mon.server.elasticsearch.util.EntityUtils;
-import cern.c2mon.server.elasticsearch.util.IndexUtils;
-import cern.c2mon.shared.client.supervision.SupervisionEvent;
+import java.io.IOException;
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.io.IOException;
-import java.util.List;
+import cern.c2mon.pmanager.persistence.exception.IDBPersistenceException;
+import cern.c2mon.server.elasticsearch.ElasticsearchSuiteTest;
+import cern.c2mon.server.elasticsearch.ElasticsearchTestDefinition;
+import cern.c2mon.server.elasticsearch.IndexNameManager;
+import cern.c2mon.server.elasticsearch.util.EmbeddedElasticsearchManager;
+import cern.c2mon.server.elasticsearch.util.EntityUtils;
+import cern.c2mon.server.elasticsearch.util.IndexUtils;
+import cern.c2mon.shared.client.supervision.SupervisionEvent;
 
 import static junit.framework.TestCase.assertTrue;
 

@@ -16,15 +16,16 @@
  *****************************************************************************/
 package cern.c2mon.server.elasticsearch.alarm;
 
+import java.io.IOException;
+import java.util.HashMap;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import cern.c2mon.pmanager.IFallback;
 import cern.c2mon.pmanager.fallback.exception.DataFallbackException;
 import cern.c2mon.server.common.alarm.Alarm;
 import cern.c2mon.server.elasticsearch.exception.ProcessingException;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.io.IOException;
-import java.util.HashMap;
 
 /**
  * Intermediate object (created from {@link Alarm} instances) used for direct

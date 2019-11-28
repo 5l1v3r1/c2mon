@@ -16,8 +16,10 @@
  *****************************************************************************/
 package cern.c2mon.server.elasticsearch;
 
-import cern.c2mon.server.elasticsearch.client.ElasticsearchClientRest;
-import cern.c2mon.server.elasticsearch.config.ElasticsearchProperties;
+import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
@@ -38,9 +40,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import cern.c2mon.server.elasticsearch.client.ElasticsearchClientRest;
+import cern.c2mon.server.elasticsearch.config.ElasticsearchProperties;
+
 
 /**
  * Rest-based (check

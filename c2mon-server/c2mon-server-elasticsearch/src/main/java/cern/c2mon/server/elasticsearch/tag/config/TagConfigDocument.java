@@ -19,9 +19,10 @@ package cern.c2mon.server.elasticsearch.tag.config;
 
 import java.util.HashMap;
 
-import cern.c2mon.server.elasticsearch.exception.ProcessingException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import cern.c2mon.server.elasticsearch.exception.ProcessingException;
 
 /**
  * @author Szymon Halastra

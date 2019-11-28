@@ -16,20 +16,21 @@
  *****************************************************************************/
 package cern.c2mon.server.elasticsearch;
 
-import cern.c2mon.server.elasticsearch.alarm.AlarmDocument;
-import cern.c2mon.server.elasticsearch.config.ElasticsearchProperties;
-import cern.c2mon.server.elasticsearch.supervision.SupervisionEventDocument;
-import cern.c2mon.server.elasticsearch.tag.TagDocument;
-import cern.c2mon.server.elasticsearch.tag.config.TagConfigDocument;
-import lombok.Getter;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import java.text.SimpleDateFormat;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Date;
 import java.util.Locale;
+
+import lombok.Getter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import cern.c2mon.server.elasticsearch.alarm.AlarmDocument;
+import cern.c2mon.server.elasticsearch.config.ElasticsearchProperties;
+import cern.c2mon.server.elasticsearch.supervision.SupervisionEventDocument;
+import cern.c2mon.server.elasticsearch.tag.TagDocument;
+import cern.c2mon.server.elasticsearch.tag.config.TagConfigDocument;
 
 /**
  * Manages index name definitions.

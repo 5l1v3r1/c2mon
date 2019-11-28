@@ -16,16 +16,17 @@
  *****************************************************************************/
 package cern.c2mon.server.elasticsearch.tag.config;
 
+import java.util.Map;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.Test;
+import org.mockito.InjectMocks;
+
 import cern.c2mon.server.common.datatag.DataTag;
 import cern.c2mon.server.common.equipment.EquipmentCacheObject;
 import cern.c2mon.server.common.process.ProcessCacheObject;
 import cern.c2mon.server.elasticsearch.tag.BaseTagDocumentConverterTest;
 import cern.c2mon.server.elasticsearch.util.EntityUtils;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Test;
-import org.mockito.InjectMocks;
-
-import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;

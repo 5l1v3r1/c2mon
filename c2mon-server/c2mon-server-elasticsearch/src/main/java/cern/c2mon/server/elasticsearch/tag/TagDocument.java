@@ -19,12 +19,12 @@ package cern.c2mon.server.elasticsearch.tag;
 import java.io.IOException;
 import java.util.HashMap;
 
-import cern.c2mon.server.elasticsearch.exception.ProcessingException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cern.c2mon.pmanager.IFallback;
 import cern.c2mon.server.common.tag.Tag;
+import cern.c2mon.server.elasticsearch.exception.ProcessingException;
 
 /**
  * Intermediate object (created from {@link Tag} instances) used for direct

@@ -19,11 +19,11 @@ package cern.c2mon.server.elasticsearch.supervision;
 import java.io.IOException;
 import java.util.HashMap;
 
-import cern.c2mon.server.elasticsearch.exception.ProcessingException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cern.c2mon.pmanager.IFallback;
+import cern.c2mon.server.elasticsearch.exception.ProcessingException;
 import cern.c2mon.shared.client.supervision.SupervisionEvent;
 
 /**

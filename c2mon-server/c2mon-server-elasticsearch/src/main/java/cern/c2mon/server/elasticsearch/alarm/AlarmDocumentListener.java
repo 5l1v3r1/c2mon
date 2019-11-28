@@ -16,7 +16,6 @@
  *****************************************************************************/
 package cern.c2mon.server.elasticsearch.alarm;
 
-import cern.c2mon.server.elasticsearch.client.ElasticsearchClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -29,6 +28,7 @@ import cern.c2mon.server.cache.CacheRegistrationService;
 import cern.c2mon.server.common.alarm.Alarm;
 import cern.c2mon.server.common.component.Lifecycle;
 import cern.c2mon.server.common.config.ServerConstants;
+import cern.c2mon.server.elasticsearch.client.ElasticsearchClient;
 
 /**
  * Listens for {@link Alarm} updates and converts them to {@link AlarmDocument}

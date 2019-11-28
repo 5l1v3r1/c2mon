@@ -16,6 +16,11 @@
  *****************************************************************************/
 package cern.c2mon.server.elasticsearch;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+
 import cern.c2mon.server.elasticsearch.alarm.AlarmDocumentConverterTests;
 import cern.c2mon.server.elasticsearch.alarm.AlarmDocumentIndexerTests;
 import cern.c2mon.server.elasticsearch.config.ElasticsearchProperties;
@@ -26,10 +31,6 @@ import cern.c2mon.server.elasticsearch.tag.TagDocumentIndexerTests;
 import cern.c2mon.server.elasticsearch.tag.config.TagConfigDocumentConverterTests;
 import cern.c2mon.server.elasticsearch.tag.config.TagConfigDocumentIndexerTests;
 import cern.c2mon.server.elasticsearch.util.EmbeddedElasticsearchManager;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({

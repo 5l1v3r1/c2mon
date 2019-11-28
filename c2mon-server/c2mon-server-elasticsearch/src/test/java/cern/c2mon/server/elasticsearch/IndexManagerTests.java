@@ -16,10 +16,15 @@
  *****************************************************************************/
 package cern.c2mon.server.elasticsearch;
 
-import cern.c2mon.server.elasticsearch.client.ElasticsearchClientRest;
-import cern.c2mon.server.elasticsearch.client.ElasticsearchClientTransport;
-import cern.c2mon.server.elasticsearch.util.EmbeddedElasticsearchManager;
-import cern.c2mon.server.elasticsearch.util.IndexUtils;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.UnknownHostException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.After;
@@ -30,14 +35,10 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.springframework.core.io.ClassPathResource;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
+import cern.c2mon.server.elasticsearch.client.ElasticsearchClientRest;
+import cern.c2mon.server.elasticsearch.client.ElasticsearchClientTransport;
+import cern.c2mon.server.elasticsearch.util.EmbeddedElasticsearchManager;
+import cern.c2mon.server.elasticsearch.util.IndexUtils;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

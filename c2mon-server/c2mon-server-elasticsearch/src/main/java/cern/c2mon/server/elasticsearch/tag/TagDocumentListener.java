@@ -16,6 +16,19 @@
  *****************************************************************************/
 package cern.c2mon.server.elasticsearch.tag;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import javax.annotation.PostConstruct;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.SmartLifecycle;
+import org.springframework.stereotype.Component;
+
 import cern.c2mon.pmanager.persistence.IPersistenceManager;
 import cern.c2mon.server.cache.C2monBufferedCacheListener;
 import cern.c2mon.server.cache.CacheRegistrationService;
@@ -23,17 +36,6 @@ import cern.c2mon.server.common.component.Lifecycle;
 import cern.c2mon.server.common.config.ServerConstants;
 import cern.c2mon.server.common.tag.Tag;
 import cern.c2mon.server.elasticsearch.client.ElasticsearchClient;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.SmartLifecycle;
-import org.springframework.stereotype.Component;
-
-import javax.annotation.PostConstruct;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Listens for {@link Tag} updates and converts them to {@link TagDocument}

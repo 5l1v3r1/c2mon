@@ -16,13 +16,14 @@
  *****************************************************************************/
 package cern.c2mon.server.elasticsearch.util;
 
-import cern.c2mon.server.elasticsearch.config.ElasticsearchProperties;
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+
 import lombok.extern.slf4j.Slf4j;
 import pl.allegro.tech.embeddedelasticsearch.EmbeddedElastic;
 import pl.allegro.tech.embeddedelasticsearch.PopularProperties;
 
-import java.io.IOException;
-import java.util.concurrent.TimeUnit;
+import cern.c2mon.server.elasticsearch.config.ElasticsearchProperties;
 
 /**
  * Allows to start embedded Elasticsearch server. Should be used for <b>TESTING</b> purposes only.

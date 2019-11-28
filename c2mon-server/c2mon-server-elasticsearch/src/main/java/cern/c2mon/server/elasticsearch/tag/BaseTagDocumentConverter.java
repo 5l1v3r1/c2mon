@@ -16,6 +16,16 @@
  *****************************************************************************/
 package cern.c2mon.server.elasticsearch.tag;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.convert.converter.Converter;
+
 import cern.c2mon.server.cache.EquipmentCache;
 import cern.c2mon.server.cache.ProcessCache;
 import cern.c2mon.server.cache.SubEquipmentCache;
@@ -25,15 +35,6 @@ import cern.c2mon.server.common.metadata.Metadata;
 import cern.c2mon.server.common.process.Process;
 import cern.c2mon.server.common.subequipment.SubEquipment;
 import cern.c2mon.server.common.tag.Tag;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.convert.converter.Converter;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 /**
  * @author Justin Lewis Salmon

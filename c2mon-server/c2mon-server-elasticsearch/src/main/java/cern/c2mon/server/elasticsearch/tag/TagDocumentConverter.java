@@ -16,6 +16,13 @@
  *****************************************************************************/
 package cern.c2mon.server.elasticsearch.tag;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import cern.c2mon.server.cache.EquipmentCache;
 import cern.c2mon.server.cache.ProcessCache;
 import cern.c2mon.server.cache.SubEquipmentCache;
@@ -24,12 +31,6 @@ import cern.c2mon.server.common.tag.Tag;
 import cern.c2mon.shared.common.datatag.DataTagQuality;
 import cern.c2mon.shared.common.datatag.TagQualityStatus;
 import cern.c2mon.shared.common.type.TypeConverter;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Converts {@link Tag} instances to {@link TagDocument} instances.

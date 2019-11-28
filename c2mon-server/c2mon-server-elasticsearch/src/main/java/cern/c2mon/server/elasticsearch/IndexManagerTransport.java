@@ -16,8 +16,10 @@
  *****************************************************************************/
 package cern.c2mon.server.elasticsearch;
 
-import cern.c2mon.server.elasticsearch.client.ElasticsearchClientTransport;
-import cern.c2mon.server.elasticsearch.config.ElasticsearchProperties;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutionException;
+
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.ResourceAlreadyExistsException;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
@@ -37,9 +39,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutionException;
+import cern.c2mon.server.elasticsearch.client.ElasticsearchClientTransport;
+import cern.c2mon.server.elasticsearch.config.ElasticsearchProperties;
 
 /**
  * Transport-based (check

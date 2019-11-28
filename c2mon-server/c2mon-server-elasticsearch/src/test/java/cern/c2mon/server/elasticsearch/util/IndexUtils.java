@@ -16,14 +16,15 @@
  *****************************************************************************/
 package cern.c2mon.server.elasticsearch.util;
 
-import cern.c2mon.server.elasticsearch.config.ElasticsearchProperties;
+import java.io.IOException;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpHead;
 import org.apache.http.impl.client.HttpClientBuilder;
 
-import java.io.IOException;
+import cern.c2mon.server.elasticsearch.config.ElasticsearchProperties;
 
 public class IndexUtils {
 

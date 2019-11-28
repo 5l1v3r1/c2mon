@@ -16,13 +16,14 @@
  *****************************************************************************/
 package cern.c2mon.server.elasticsearch.tag.config;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import cern.c2mon.server.cache.TagFacadeGateway;
 import cern.c2mon.server.elasticsearch.IndexManager;
 import cern.c2mon.server.elasticsearch.MappingFactory;
 import cern.c2mon.server.elasticsearch.config.ElasticsearchProperties;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 /**
  * This class manages the indexing of {@link TagConfigDocument} instances to

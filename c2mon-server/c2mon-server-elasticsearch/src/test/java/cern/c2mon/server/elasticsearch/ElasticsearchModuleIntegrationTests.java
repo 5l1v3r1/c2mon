@@ -16,6 +16,15 @@
  *****************************************************************************/
 package cern.c2mon.server.elasticsearch;
 
+import java.io.IOException;
+import java.util.List;
+
+import lombok.extern.slf4j.Slf4j;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
 import cern.c2mon.server.cache.config.CacheModule;
 import cern.c2mon.server.cache.dbaccess.config.CacheDbAccessModule;
 import cern.c2mon.server.cache.loading.config.CacheLoadingModule;
@@ -24,14 +33,6 @@ import cern.c2mon.server.elasticsearch.config.ElasticsearchModule;
 import cern.c2mon.server.elasticsearch.junit.CachePopulationRule;
 import cern.c2mon.server.elasticsearch.util.EmbeddedElasticsearchManager;
 import cern.c2mon.server.supervision.config.SupervisionModule;
-import lombok.extern.slf4j.Slf4j;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import java.io.IOException;
-import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 

@@ -16,22 +16,23 @@
  *****************************************************************************/
 package cern.c2mon.server.elasticsearch.tag;
 
-import cern.c2mon.pmanager.persistence.exception.IDBPersistenceException;
-import cern.c2mon.server.common.datatag.DataTagCacheObject;
-import cern.c2mon.server.elasticsearch.ElasticsearchTestDefinition;
-import cern.c2mon.server.elasticsearch.ElasticsearchSuiteTest;
-import cern.c2mon.server.elasticsearch.IndexNameManager;
-import cern.c2mon.server.elasticsearch.junit.CachePopulationRule;
-import cern.c2mon.server.elasticsearch.util.EmbeddedElasticsearchManager;
-import cern.c2mon.server.elasticsearch.util.EntityUtils;
-import cern.c2mon.server.elasticsearch.util.IndexUtils;
+import java.io.IOException;
+import java.util.List;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.io.IOException;
-import java.util.List;
+import cern.c2mon.pmanager.persistence.exception.IDBPersistenceException;
+import cern.c2mon.server.common.datatag.DataTagCacheObject;
+import cern.c2mon.server.elasticsearch.ElasticsearchSuiteTest;
+import cern.c2mon.server.elasticsearch.ElasticsearchTestDefinition;
+import cern.c2mon.server.elasticsearch.IndexNameManager;
+import cern.c2mon.server.elasticsearch.junit.CachePopulationRule;
+import cern.c2mon.server.elasticsearch.util.EmbeddedElasticsearchManager;
+import cern.c2mon.server.elasticsearch.util.EntityUtils;
+import cern.c2mon.server.elasticsearch.util.IndexUtils;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

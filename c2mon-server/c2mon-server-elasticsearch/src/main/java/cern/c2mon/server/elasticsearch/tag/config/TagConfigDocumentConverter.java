@@ -16,6 +16,14 @@
  *****************************************************************************/
 package cern.c2mon.server.elasticsearch.tag.config;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import cern.c2mon.server.cache.EquipmentCache;
 import cern.c2mon.server.cache.ProcessCache;
 import cern.c2mon.server.cache.SubEquipmentCache;
@@ -23,13 +31,6 @@ import cern.c2mon.server.common.alarm.Alarm;
 import cern.c2mon.server.common.tag.Tag;
 import cern.c2mon.server.elasticsearch.alarm.BaseAlarmDocumentConverter;
 import cern.c2mon.server.elasticsearch.tag.BaseTagDocumentConverter;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
 

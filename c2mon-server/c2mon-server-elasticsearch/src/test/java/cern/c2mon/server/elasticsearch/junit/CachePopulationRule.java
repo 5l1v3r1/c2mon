@@ -16,6 +16,12 @@
  *****************************************************************************/
 package cern.c2mon.server.elasticsearch.junit;
 
+import java.sql.SQLException;
+
+import net.sf.ehcache.CacheManager;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import cern.c2mon.server.cache.alarm.impl.AlarmCacheImpl;
 import cern.c2mon.server.cache.alive.AliveTimerCacheImpl;
 import cern.c2mon.server.cache.command.CommandTagCacheImpl;
@@ -29,11 +35,6 @@ import cern.c2mon.server.cache.process.ProcessCacheImpl;
 import cern.c2mon.server.cache.rule.RuleTagCacheImpl;
 import cern.c2mon.server.cache.subequipment.SubEquipmentCacheImpl;
 import cern.c2mon.server.test.DatabasePopulationRule;
-import net.sf.ehcache.CacheManager;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.sql.SQLException;
 
 /**
  * Using this rule in a JUnit test will ensure that all caches are preloaded

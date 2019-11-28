@@ -16,13 +16,6 @@
  *****************************************************************************/
 package cern.c2mon.server.elasticsearch.supervision;
 
-import cern.c2mon.pmanager.persistence.IPersistenceManager;
-import cern.c2mon.server.common.component.Lifecycle;
-import cern.c2mon.server.common.config.ServerConstants;
-import cern.c2mon.server.elasticsearch.client.ElasticsearchClient;
-import cern.c2mon.server.supervision.SupervisionListener;
-import cern.c2mon.server.supervision.SupervisionNotifier;
-import cern.c2mon.shared.client.supervision.SupervisionEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -31,6 +24,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+
+import cern.c2mon.pmanager.persistence.IPersistenceManager;
+import cern.c2mon.server.common.component.Lifecycle;
+import cern.c2mon.server.common.config.ServerConstants;
+import cern.c2mon.server.elasticsearch.client.ElasticsearchClient;
+import cern.c2mon.server.supervision.SupervisionListener;
+import cern.c2mon.server.supervision.SupervisionNotifier;
+import cern.c2mon.shared.client.supervision.SupervisionEvent;
 
 /**
  * Listens for {@link SupervisionEvent} updates and converts them to

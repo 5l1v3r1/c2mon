@@ -16,13 +16,14 @@
  *****************************************************************************/
 package cern.c2mon.server.elasticsearch;
 
-import cern.c2mon.server.elasticsearch.tag.TagDocument;
-import org.junit.Before;
-import org.junit.Test;
-
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import cern.c2mon.server.elasticsearch.tag.TagDocument;
 
 import static junit.framework.TestCase.assertEquals;
 

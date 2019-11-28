@@ -16,7 +16,8 @@
  *****************************************************************************/
 package cern.c2mon.server.elasticsearch.client;
 
-import cern.c2mon.server.elasticsearch.config.ElasticsearchProperties;
+import java.io.IOException;
+
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpHost;
@@ -32,7 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
+import cern.c2mon.server.elasticsearch.config.ElasticsearchProperties;
 
 /**
  * Wrapper around {@link RestHighLevelClient}. Connects asynchronously, but also provides

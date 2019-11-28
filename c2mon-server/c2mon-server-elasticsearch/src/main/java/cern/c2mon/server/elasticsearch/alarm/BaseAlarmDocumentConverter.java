@@ -16,8 +16,9 @@
  *****************************************************************************/
 package cern.c2mon.server.elasticsearch.alarm;
 
-import cern.c2mon.server.common.alarm.Alarm;
 import org.springframework.core.convert.converter.Converter;
+
+import cern.c2mon.server.common.alarm.Alarm;
 
 /**
  * Converts {@link Alarm} to {@link AlarmDocument} excluding values.

@@ -16,7 +16,13 @@
  *****************************************************************************/
 package cern.c2mon.server.elasticsearch.client;
 
-import cern.c2mon.server.elasticsearch.config.ElasticsearchProperties;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
@@ -32,12 +38,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import cern.c2mon.server.elasticsearch.config.ElasticsearchProperties;
 
 /**
  * Wrapper around {@link Client}. Connects asynchronously, but also provides
