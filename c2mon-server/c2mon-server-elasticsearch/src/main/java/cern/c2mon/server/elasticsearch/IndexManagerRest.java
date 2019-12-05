@@ -157,8 +157,9 @@ public class IndexManagerRest implements IndexManager {
         exists = searchResponse.status().equals(RestStatus.OK);
       } catch (ElasticsearchStatusException e) {
         if (!RestStatus.NOT_FOUND.equals(e.status())) {
-          log.error("Error checking '{}' index existence on Elasticsearch, unexpected status: ", e);
+          log.warn("Error checking '{}' index existence on Elasticsearch, unexpected status: ", indexName, e);
         }
+        log.debug("Exception checking '{}' index existence on Elasticsearch: ", indexName, e);
       } catch (IOException e) {
         log.error("Error checking '{}' index existence on Elasticsearch.", indexName, e);
       }
