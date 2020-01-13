@@ -142,9 +142,9 @@ public class ElasticsearchProperties {
   private String supervisionFallbackFile = "/tmp/es-supervision-fallback.txt";
 
   /**
-   * Enable/Disable Elasticsearch REST Client (if disabled Transport client will be used instead)
+   * Defines the client to be used to communicate with Elasticsearch (possible values: [rest, transport])
    */
-  private boolean rest = true;
+  private String client = "rest";
 
   /**
    * Defines whether mapping templates are managed by C2MON
