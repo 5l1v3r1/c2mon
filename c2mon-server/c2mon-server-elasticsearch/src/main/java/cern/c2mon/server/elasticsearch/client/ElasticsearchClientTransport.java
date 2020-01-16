@@ -54,6 +54,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import cern.c2mon.server.elasticsearch.config.ElasticsearchProperties;
 import cern.c2mon.server.elasticsearch.domain.IndexMetadata;
 
+import static cern.c2mon.server.elasticsearch.config.ElasticsearchProperties.*;
+
 /**
  * Wrapper around {@link Client}. Connects asynchronously, but also provides
  * methods to block until a healthy connection is established.
@@ -192,6 +194,7 @@ public final class ElasticsearchClientTransport implements ElasticsearchClient {
    *
    * @return the {@link Client} instance
    */
+  @SuppressWarnings("squid:S2095")
   private Client createClient() {
     final Settings.Builder settingsBuilder = Settings.builder();
 

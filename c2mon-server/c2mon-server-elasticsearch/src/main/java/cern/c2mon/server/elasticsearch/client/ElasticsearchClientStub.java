@@ -26,48 +26,51 @@ import cern.c2mon.server.elasticsearch.domain.IndexMetadata;
  * @author Serhiy Boychenko
  */
 public class ElasticsearchClientStub implements ElasticsearchClient {
+
+  public static final String STUB_CLIENT_ERROR_MESSAGE = "Elasticsearch client stub does not support any operations.";
+
   @Override
   public BulkProcessor getBulkProcessor(BulkProcessor.Listener listener) {
-    throw new UnsupportedOperationException("Elasticsearch client stub does not support any operations.");
+    throw new UnsupportedOperationException(STUB_CLIENT_ERROR_MESSAGE);
   }
 
   @Override
   public boolean createIndex(IndexMetadata indexMetadata, String mapping) {
-    throw new UnsupportedOperationException("Elasticsearch client stub does not support any operations.");
+    throw new UnsupportedOperationException(STUB_CLIENT_ERROR_MESSAGE);
   }
 
   @Override
   public boolean indexData(IndexMetadata indexMetadata, String data) {
-    throw new UnsupportedOperationException("Elasticsearch client stub does not support any operations.");
+    throw new UnsupportedOperationException(STUB_CLIENT_ERROR_MESSAGE);
   }
 
   @Override
   public boolean isIndexExisting(IndexMetadata indexMetadata) {
-    throw new UnsupportedOperationException("Elasticsearch client stub does not support any operations.");
+    throw new UnsupportedOperationException(STUB_CLIENT_ERROR_MESSAGE);
   }
 
   @Override
   public boolean updateIndex(IndexMetadata indexMetadata, String data) {
-    throw new UnsupportedOperationException("Elasticsearch client stub does not support any operations.");
+    throw new UnsupportedOperationException(STUB_CLIENT_ERROR_MESSAGE);
   }
 
   @Override
   public boolean deleteIndex(IndexMetadata indexMetadata) {
-    throw new UnsupportedOperationException("Elasticsearch client stub does not support any operations.");
+    throw new UnsupportedOperationException(STUB_CLIENT_ERROR_MESSAGE);
   }
 
   @Override
   public void waitForYellowStatus() {
-    throw new UnsupportedOperationException("Elasticsearch client stub does not support any operations.");
+    throw new UnsupportedOperationException(STUB_CLIENT_ERROR_MESSAGE);
   }
 
   @Override
   public boolean isClusterYellow() {
-    throw new UnsupportedOperationException("Elasticsearch client stub does not support any operations.");
+    throw new UnsupportedOperationException(STUB_CLIENT_ERROR_MESSAGE);
   }
 
   @Override
   public void close() {
-    throw new UnsupportedOperationException("Elasticsearch client stub does not support any operations.");
+    throw new UnsupportedOperationException(STUB_CLIENT_ERROR_MESSAGE);
   }
 }

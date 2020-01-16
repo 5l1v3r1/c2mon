@@ -26,14 +26,6 @@ import cern.c2mon.server.elasticsearch.domain.IndexMetadata;
  * @author Serhiy Boychenko
  */
 public interface ElasticsearchClient {
-
-  /**
-   * Type is being removed in Elasticsearch 6.x (check
-   * <a href="https://www.elastic.co/guide/en/elasticsearch/reference/master/removal-of-types.html">Elasticsearch
-   * documentation</a> for more details).
-   */
-  String TYPE = "doc";
-
   /**
    * Set up the {@link BulkProcessor} for provided {@link BulkProcessor.Listener}.
    *

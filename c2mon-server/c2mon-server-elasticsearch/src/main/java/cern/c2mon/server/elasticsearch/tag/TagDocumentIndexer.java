@@ -88,9 +88,9 @@ public class TagDocumentIndexer implements IDBPersistenceHandler<TagDocument> {
   private void indexTag(TagDocument tag) {
     String index = getOrCreateIndex(tag);
 
-    log.trace("Indexing tag (#{}, index={}, type={})", tag.getId(), index, ElasticsearchClient.TYPE);
+    log.trace("Indexing tag (#{}, index={}, type={})", tag.getId(), index, ElasticsearchProperties.TYPE);
 
-    IndexRequest indexNewTag = new IndexRequest(index, ElasticsearchClient.TYPE)
+    IndexRequest indexNewTag = new IndexRequest(index, ElasticsearchProperties.TYPE)
         .source(tag.toString(), XContentType.JSON)
         .routing(tag.getId());
 
